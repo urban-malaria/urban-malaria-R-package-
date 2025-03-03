@@ -5,8 +5,6 @@
 # Purpose: Creates and saves final reprioritization maps using composite scores.
 # ==========================================================================================================================================
 
-# hello???
-
 #' Prioritize Wards Based on Population and Ranking
 #'
 #' This function selects wards for reprioritization based on their population and malaria risk ranking.
