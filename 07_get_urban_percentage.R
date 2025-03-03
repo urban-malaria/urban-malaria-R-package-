@@ -42,7 +42,7 @@ get_urban_percentage <- function(urban_data_path) {
     message("\n⚠️  Urban percentage data is missing! ⚠️")
     message("To proceed, you need to calculate urban percentage for each ward using Google Earth Engine.")
     message("Follow these steps:")
-    message("1️⃣  Open this Google Earth Engine script:https://code.earthengine.google.com/65880dede3b29e14f98ff1a037995a6bK")
+    message("1️⃣  Open this Google Earth Engine script: https://code.earthengine.google.com/10e57f311f3cc2b81a0d247593ed4666K")
     message("2️⃣  Run the script to calculate urban percentage for each ward.")
     message("3️⃣  Download the resulting CSV file and save it here: ", urban_data_path)
     message("4️⃣  Rerun this function after saving the file.")
