@@ -76,10 +76,10 @@ extract_raster_data <- function(state_name, shapefile_path, raster_paths) {
     # Load shapefile
     message("Loading shapefile for ", state_name)
     wards <- tryCatch({
-      st_make_valid(st_read(shapefile_path))
+      sf::st_make_valid(st_read(shapefile_path))
     }, error = function(e) stop("Failed to load shapefile: ", e$message))
 
-    empty_geo <- st_is_empty(wards)
+    empty_geo <- sf::st_is_empty(wards)
     wards <- wards[!empty_geo, ]
     wards_sp <- as(wards, "Spatial")
 
@@ -288,7 +288,7 @@ extract_raster_data <- function(state_name, shapefile_path, raster_paths) {
 
     # Save extracted variables
     message("Saving Extracted Variables for ", state_name)
-    output_variables <- st_drop_geometry(wards)
+    output_variables <- sf::st_drop_geometry(wards)
     output_file <- file.path(raster_paths$output_dir, paste0(state_name, "_wards_variables.csv"))
     write.csv(output_variables, output_file, row.names = FALSE)
 

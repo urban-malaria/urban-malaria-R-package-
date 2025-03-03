@@ -40,17 +40,41 @@
 get_urban_percentage <- function(urban_data_path) {
   if (!file.exists(urban_data_path)) {
     message("\n⚠️  Urban percentage data is missing! ⚠️")
-    message("To proceed, you need to calculate urban percentage for each ward using Google Earth Engine.")
-    message("Follow these steps:")
-    message("1️⃣  Open this Google Earth Engine script: https://code.earthengine.google.com/10e57f311f3cc2b81a0d247593ed4666K")
-    message("2️⃣  Run the script to calculate urban percentage for each ward.")
-    message("3️⃣  Download the resulting CSV file and save it here: ", urban_data_path)
-    message("4️⃣  Rerun this function after saving the file.")
+    message("To proceed, calculate the urban percentage for each ward using Google Earth Engine.")
+    message("\n📌 Follow these steps:")
 
-    stop("Urban percentage data is required. Please follow the instructions above and try again.")
+    message("1️⃣  Open this Google Earth Engine script:")
+    message("    🔗 https://code.earthengine.google.com/10e57f311f3cc2b81a0d247593ed4666")
+
+    message("2️⃣  Upload the shapefile for the state of interest:")
+    message("    - Navigate to the 'Assets' tab on the left.")
+    message("    - Click 'New' > 'Shape Files' and upload your state's shapefile.")
+
+    message("3️⃣  Modify the script:")
+    message("    - On **line 8**, replace 'your_username' with your Earth Engine username.")
+    message("    - Replace 'your_shapefile' with the uploaded state shapefile name.")
+    message("      Example: `var shapefile = ee.FeatureCollection('projects/ee_yourname/assets/Delta_State');`")
+
+    message("4️⃣  Run the script:")
+    message("    - Click **'Run'** to execute the script.")
+
+    message("5️⃣  Export the results:")
+    message("    - Navigate to the **'Tasks'** tab on the right.")
+    message("    - Under **'Unsubmitted Tasks'**, click **'Run'**.")
+    message("    - Rename the task and filename to include the state name, e.g., `delta_urban_percentage`.")
+    message("    - Ensure the file format is **GeoJSON** and click **'Run'**.")
+
+    message("6️⃣  Download the results:")
+    message("    - Under **'Submitted Tasks'**, click the blue box with the file name.")
+    message("    - Click **'Open in Drive'**, then **download the CSV**.")
+    message("    - Save the file here: ", urban_data_path)
+
+    message("7️⃣  Rerun this function after saving the file.")
+
+    stop("Urban percentage data is required. Please follow the steps above and try again.")
   } else {
-    message("Urban percentage data found. Proceeding with analysis...")
-    urban_data <- read.csv(urban_data_path)
+    message("✅ Urban percentage data found. Proceeding with analysis...")
+    urban_data <- sf::st_read(urban_data_path)
     return(urban_data)
   }
 }

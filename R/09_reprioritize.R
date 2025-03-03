@@ -5,8 +5,6 @@
 # Purpose: Creates and saves final reprioritization maps using composite scores.
 # ==========================================================================================================================================
 
-# hello???
-
 #' Prioritize Wards Based on Population and Ranking
 #'
 #' This function selects wards for reprioritization based on their population and malaria risk ranking.
@@ -73,9 +71,9 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
     ward <- data_sorted[i, ]
 
     # skip if classification column is missing or if the ward is classified as "Rural"
-    if (is.na(ward[[class_col]]) || ward[[class_col]] == "Rural") {
-      next
-    }
+    # if (is.na(ward[[class_col]]) || ward[[class_col]] == "Rural") {
+    #   next
+    # }
 
     selected_wards <- c(selected_wards, ward[[ward_col]])
     ward_population <- ward[[population_col]]
@@ -87,9 +85,9 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
     ward_percentages <- c(ward_percentages, round(current_percentage, 2))
 
     # stop when the cumulative population reaches or exceeds the target percentage
-    if (!is.na(current_percentage) && (cumulative_population / total_population) * 100 >= target_percentage) {
-      break
-    }
+    # if (!is.na(current_percentage) && (cumulative_population / total_population) * 100 >= target_percentage) {
+    #   break
+    # }
   }
 
   # create a result dataframe
@@ -129,7 +127,7 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
 #'
 #' @import dplyr
 #' @export
-merge <- function(tpr_data_path, extracted_data) {
+tpr_merge <- function(tpr_data_path, extracted_data) {
   tpr_data <- read.csv(tpr_data_path)
   extracted_data_plus <- extracted_data %>%
     left_join(tpr_data %>% dplyr::select(WardName, u5_tpr_rdt), by = "WardName")
@@ -195,7 +193,7 @@ merge <- function(tpr_data_path, extracted_data) {
 #' @import grid
 #' @importFrom sf st_read
 #' @export
-create_reprioritization_map <- function(state_name, shp_dir, output_dir, itn_dir, extracted_data_dir, ranked_wards) {
+create_reprioritization_map <- function(state_name, shp_dir, output_dir, itn_dir, extracted_data_dir, ranked_wards, map_output_dir) {
 
   # load shapefile, extracted covariates data, and ranked wards df
   state_shp <- st_read(shp_dir)
@@ -214,10 +212,12 @@ create_reprioritization_map <- function(state_name, shp_dir, output_dir, itn_dir
     )
 
   # read and clean ITN data
-  state_itn_data <- read.csv(itn_dir)
+  state_itn_data <- read_xlsx(itn_dir)
 
   colnames(state_itn_data)[colnames(state_itn_data) == "AdminLevel3"] <- "Ward"
+  colnames(state_itn_data)[colnames(state_itn_data) == "Row Labels"] <- "Ward"
   colnames(state_itn_data)[colnames(state_itn_data) == "N_FamilyMembers"] <- "Population"
+  colnames(state_itn_data)[colnames(state_itn_data) == "Sum of N_Nets"] <- "Population"
 
   state_itn_data <- state_itn_data %>%
     dplyr::select(Population, Ward) %>%
@@ -261,7 +261,7 @@ create_reprioritization_map <- function(state_name, shp_dir, output_dir, itn_dir
   risk_map <- ggplot() +
     geom_sf(data = state_shp %>% left_join(combined_wards2, by = "WardName"),
             aes(geometry = geometry, fill = rank)) +
-    scale_fill_gradient(name = "Rank", na.value = "grey") +
+    scale_fill_gradient(name = "Rank", low = "lightyellow", high = "red", na.value = "grey") +
     labs(title = paste("Malaria Risk Map in", state_name, "State")) +
     map_theme()
 
@@ -307,6 +307,12 @@ create_reprioritization_map <- function(state_name, shp_dir, output_dir, itn_dir
     top = textGrob(paste("Reprioritization Scenarios in", state_name),
                    gp = gpar(fontsize = 12, fontface = "bold", hjust = 0.5))
   )
+
+  ggsave(filename = file.path(map_output_dir, paste0(Sys.Date(), "_", state_name, '_risk_map.pdf')),
+         plot = risk_map, width = 12, height = 8)
+
+  ggsave(filename = file.path(map_output_dir, paste0(Sys.Date(), "_", state_name, '_reprioritization_maps.pdf')),
+         plot = final_grid, width = 12, height = 8)
 
   return(list(risk_map = risk_map, reprioritization_map = final_grid))
 }
