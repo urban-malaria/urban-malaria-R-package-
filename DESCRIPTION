@@ -4,14 +4,12 @@ Title: Reprioritization of ITN Distribution for Nigerian States
 Version: 0.1.0
 Author: Grace Legris
 Maintainer: Grace Legris <gracebea@gmail.com>
-Description: This R package streamlines the analysis and mapping of ward-level reprioritization scenarios 
-    for bed net distribution across Nigerian states. It includes tools for:
+Description: This R package streamlines the analysis and mapping of ward-level reprioritization scenarios for bed net distribution across Nigerian states. It includes tools for:
     - Processing shapefiles
     - Extracting and visualizing environmental and demographic data
     - Classifying settlements
     - Analyzing malaria prevalence
     - Generating reprioritization maps
-    
     Designed to support the National Malaria Elimination Programme (NMEP), the package enables flexible, 
     data-driven decision-making for optimizing malaria intervention strategies.
 License: GPL-3
@@ -30,7 +28,11 @@ Imports:
     knitr,
     exactextractr,
     readxl,
-    stringr
+    stringr,
+    rlang,
+    grid,
+    gridExtra,
+    janitor
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
