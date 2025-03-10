@@ -19,11 +19,15 @@ results <- reprioritize(
   itn_dir = file.path(ITNDir, "pbi_distribution_Delta.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
-    elevation_path = file.path(RastersDir, "Elevation/ELE.tif"),
+    evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
+    flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
+    #elevation_path = file.path(RastersDir, "Elevation/ELE.tif"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  extracted_data_dir = file.path(DriveDir, "projects/urban_microstratification/Shiny App/Final Extractions/delta_plus.csv"),
-  risk_factors = c("distance_to_water", "elevation", "u5_tpr_rdt"),
+  risk_factors = c("distance_to_water", "mean_EVI", "flood", "u5_tpr_rdt"),
   urban_data_path = file.path(DataDir, "nigeria/urban_percentage/delta_urban_percentage.geojson"),
-  map_output_dir = file.path(MapOutputDir)
+  map_output_dir = file.path(MapOutputDir),
+  include_settlement_type = "Yes",
+  include_u5_tpr_data = "Yes",
+  scenarios = c(20, 75),
 )
