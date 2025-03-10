@@ -7,7 +7,6 @@
 #' @param state_name Name of the state (e.g., "Kano")
 #' @param shapefile_path Path to the state shapefile
 #' @param tpr_data_path Path to the TPR data CSV file
-#' @param output_dir Path to save extracted and processed data
 #' @param itn_dir Path to the ITN distribution data
 #' @param raster_paths Named list of paths to raster data for extraction
 #' @param risk_factors Vector of covariate names to use in risk score calculation
