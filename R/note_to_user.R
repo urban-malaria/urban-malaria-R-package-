@@ -1,7 +1,6 @@
 
 #' @noRd
 .onAttach <- function(libname, pkgname) {
-  # ... (rest of the function)
 }
 
 .onAttach <- function(libname, pkgname) {
@@ -32,6 +31,8 @@
       "  2️⃣  A .csv file containing under-5 malaria TPR data by ward with column names WardName and u5_tpr_rdt.\n",
       "  3️⃣  An .xlsx file containing ITN distribution data by ward with column names WardName and num_ITN.\n",
       "  4️⃣  A list of raster .tif files containing environmental raster data you would like to include in the composite score calculation.\n",
+      "  5️⃣  A .geojson file containing the state's urban percentage data. If you do not have this, leave it blank and run the reprioritize()\n",
+      "      function and instructions for how to get it using Google Earth Engine will appear. Then, re-run reprioritize().\n",
       "OUTPUT: This reprioritize() function will save a risk map and four reprioritization scenario maps to map_output_dir.\n",
       "For more information, see the package documentation."
     )
