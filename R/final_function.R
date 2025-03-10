@@ -14,7 +14,7 @@
 #' @param risk_factors Vector of covariate names to use in risk score calculation
 #' @export
 
-reprioritize <- function(state_name, shapefile_path, tpr_data_path, output_dir, itn_dir,
+reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
                          extracted_data_dir, raster_paths, risk_factors, urban_data_path, map_output_dir,
                          include_settlement_type, include_u5_tpr_data, scenarios) {
   message("Extracting raster data...")
@@ -49,7 +49,6 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, output_dir, 
   maps <- create_reprioritization_map(
     state_name = state_name,
     shp_dir = shapefile_path,
-    output_dir = output_dir,
     itn_dir = itn_dir,
     extracted_data = extracted_data_plus,
     ranked_wards = ranked_wards,
