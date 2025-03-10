@@ -79,7 +79,7 @@ calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_
     }
   }, USE.NAMES = FALSE)
   # remove NULL values from the list
-  supplied_variables <- supplied_variables[!sapply(existing_variables, is.null)]
+  supplied_variables <- supplied_variables[!sapply(supplied_variables, is.null)]
   covariates = paste(supplied_variables)
 
   # ensure covariates exist in data
