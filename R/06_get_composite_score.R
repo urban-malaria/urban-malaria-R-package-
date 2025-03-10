@@ -58,7 +58,7 @@ normalize <- function(x) {
 #' @import dplyr
 #' @importFrom rlang sym
 #' @export
-calculate_malaria_risk_scores <- function(extracted_data, include_settlement_type, include_u5_tpr_data) {
+calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_settlement_type, include_u5_tpr_data) {
 
   # use user-inputted raster paths list to get list of covariates for use in risk score calculation
   # write list of variables included in composite score calculations (add to caption on maps)
