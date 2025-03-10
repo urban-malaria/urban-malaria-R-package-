@@ -36,6 +36,7 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   message("Calculating composite malaria risk scores...")
   malaria_risk_scores <- calculate_malaria_risk_scores(
     extracted_data = extracted_data_plus,
+    raster_paths = raster_paths,
     include_settlement_type = include_settlement_type,
     include_u5_tpr_data = include_u5_tpr_data
   )
