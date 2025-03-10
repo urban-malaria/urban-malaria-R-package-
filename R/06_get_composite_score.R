@@ -61,10 +61,40 @@ normalize <- function(x) {
 #' @import dplyr
 #' @importFrom rlang sym
 #' @export
-calculate_malaria_risk_scores <- function(extracted_data, covariates) {
+calculate_malaria_risk_scores <- function(extracted_data, include_settlement_type, include_u5_tpr_data) {
+
+  # use user-inputted raster paths list to get list of covariates for use in risk score calculation
+  # write list of variables included in composite score calculations (add to caption on maps)
+  possible_variables <- list(
+    evi_path = "mean_EVI", ndvi_path = "mean_NDVI", rainfall_path = "mean_rainfall", h2o_distance_path = "distance_to_water",
+    elevation_path = "elevation", rh_2023 = "rh_2023", rh_2024 = "rh_2024",
+    temp_2023 = "temp_2023", temp_2024 = "temp_2024",
+    housing_quality_path = "housing_quality", ndwi_path = "NDWI", ndmi_path = "NDMI", pfpr_path = "pfpr",
+    lights_path = "avgRAD", surface_soil_wetness_path = "mean_soil_wetness",
+    flood_path = "flood", settlement_type = "settlement_type"
+  )
+  # check which files exist and collect their labels
+  supplied_variables <- sapply(names(raster_paths), function(var) {
+    if (file.exists(raster_paths[[var]])) {
+      return(possible_variables[[var]])
+    } else {
+      return(NULL)
+    }
+  }, USE.NAMES = FALSE)
+  # remove NULL values from the list
+  supplied_variables <- supplied_variables[!sapply(existing_variables, is.null)]
+  covariates = paste(supplied_variables)
 
   # ensure covariates exist in data
   covariates <- covariates[covariates %in% names(extracted_data)]
+
+  # if user said "yes" to including settlement type and u5 tpr data, add them to covariate list
+  if (include_settlement_type == "Yes" || include_settlement_type == "yes") {
+    covariates <- c(covariates, "settlement_type")
+  }
+  if (include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
+    covariates <- c(covariates, "u5_tpr_rdt")
+  }
 
   if (length(covariates) < 2) {
     stop("At least two valid covariates are required for composite score calculation.")
@@ -103,7 +133,7 @@ calculate_malaria_risk_scores <- function(extracted_data, covariates) {
   # clean column names for consistency
   data_normalized <- data_normalized %>%
     select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
-    rename_with(~ gsub("\\.x$", "", .)) %>%  # remove .x suffix from column names
+    rename_with(~ gsub("\\.x$", "", .))  # remove .x suffix from column names
 
   return(data_normalized)
 }
