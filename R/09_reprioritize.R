@@ -236,9 +236,9 @@ settlement_type_merge <- function(settlement_blocks_path, extracted_data, state_
 #' @importFrom sf st_read
 #' @importFrom readxl read_xlsx
 #' @export
-create_reprioritization_map <- function(state_name, shp_dir, output_dir, itn_dir,
+create_reprioritization_map <- function(state_name, shp_dir, itn_dir,
                                         extracted_data, ranked_wards, map_output_dir,
-                                        include_settlement_type, include_u5_tpr_data, scenarios = c(20, 30, 50, 75)) {
+                                        include_settlement_type, include_u5_tpr_data, scenarios) {
 
   # load shapefile, extracted covariates data, and ranked wards
   state_shp <- st_read(shp_dir)
