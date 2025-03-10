@@ -100,5 +100,10 @@ calculate_malaria_risk_scores <- function(extracted_data, covariates) {
   }
   message("composite scores computed.")
 
+  # clean column names for consistency
+  data_normalized <- data_normalized %>%
+    select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
+    rename_with(~ gsub("\\.x$", "", .)) %>%  # remove .x suffix from column names
+
   return(data_normalized)
 }
