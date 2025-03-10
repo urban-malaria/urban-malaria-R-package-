@@ -48,11 +48,8 @@ normalize <- function(x) {
 #' # Assume you have a CSV file with extracted ward variables
 #' extracted_data <- read.csv("path/to/wards_variables.csv")
 #'
-#' # Define the covariates to use in the composite score calculation
-#' covariates <- c("mean_EVI", "mean_NDVI", "mean_rainfall")
-#'
 #' # Calculate composite malaria risk scores
-#' composite_scores <- calculate_malaria_risk_scores(extracted_data, covariates)
+#' composite_scores <- calculate_malaria_risk_scores(extracted_data, include_settlement_type, include_u5_tpr_data)
 #'
 #' # View the first few rows of the resulting data frame
 #' head(composite_scores)
