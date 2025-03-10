@@ -22,10 +22,9 @@ results <- reprioritize(
     #elevation_path = file.path(RastersDir, "Elevation/ELE.tif"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  risk_factors = c("distance_to_water", "mean_EVI", "flood", "u5_tpr_rdt"),
   urban_data_path = file.path(DataDir, "nigeria/urban_percentage/delta_urban_percentage.geojson"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
-  include_settlement_type = "Yes",
+  include_settlement_type = "No",
   include_u5_tpr_data = "Yes",
-  scenarios = c(20, 75),
+  scenarios = c(20, 75)
 )
