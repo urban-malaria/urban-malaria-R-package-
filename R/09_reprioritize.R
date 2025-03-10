@@ -177,7 +177,6 @@ settlement_type_merge <- function(settlement_blocks_path, extracted_data, state_
 #'
 #' @param state_name A character string representing the name of the state for which maps are created.
 #' @param shp_dir A character string specifying the file path to the state's shapefile (e.g., GeoJSON or SHP).
-#' @param output_dir A character string specifying the directory where intermediate outputs will be saved.
 #' @param itn_dir A character string specifying the file path to the ITN distribution data (Excel file).
 #' @param extracted_data A data frame containing extracted covariate data for wards. Must include columns such as \code{WardCode}, \code{WardName}, and \code{urbanPercentage}.
 #' @param ranked_wards A data frame containing ward ranking information. Must include columns such as \code{WardName} and \code{rank}.
