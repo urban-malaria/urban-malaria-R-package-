@@ -7,15 +7,14 @@
 #' @param state_name Name of the state (e.g., "Kano")
 #' @param shapefile_path Path to the state shapefile
 #' @param tpr_data_path Path to the TPR data CSV file
-#' @param output_dir Path to save extracted and processed data
 #' @param itn_dir Path to the ITN distribution data
 #' @param raster_paths Named list of paths to raster data for extraction
-#' @param extracted_data_dir Path to the extracted data
 #' @param risk_factors Vector of covariate names to use in risk score calculation
 #' @export
 
-reprioritize <- function(state_name, shapefile_path, tpr_data_path, output_dir, itn_dir,
-                         extracted_data_dir, raster_paths, risk_factors, urban_data_path, map_output_dir) {
+reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
+                         raster_paths, urban_data_path, map_output_dir,
+                         include_settlement_type, include_u5_tpr_data, scenarios) {
   message("Extracting raster data...")
   extracted_data <- extract_raster_data(
     state_name = state_name,
@@ -37,7 +36,9 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, output_dir, 
   message("Calculating composite malaria risk scores...")
   malaria_risk_scores <- calculate_malaria_risk_scores(
     extracted_data = extracted_data_plus,
-    risk_factors
+    raster_paths = raster_paths,
+    include_settlement_type = include_settlement_type,
+    include_u5_tpr_data = include_u5_tpr_data
   )
 
   message("Ranking wards by risk score...")
@@ -47,11 +48,13 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, output_dir, 
   maps <- create_reprioritization_map(
     state_name = state_name,
     shp_dir = shapefile_path,
-    output_dir = output_dir,
     itn_dir = itn_dir,
-    extracted_data_dir = extracted_data_dir,
+    extracted_data = extracted_data_plus,
     ranked_wards = ranked_wards,
-    map_output_dir = MapOutputDir
+    map_output_dir = map_output_dir,
+    include_settlement_type = include_settlement_type,
+    include_u5_tpr_data = include_u5_tpr_data,
+    scenarios = scenarios
   )
 
   message("Reprioritization process for ", state_name, " completed.")
