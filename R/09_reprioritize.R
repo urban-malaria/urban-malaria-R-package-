@@ -131,35 +131,50 @@ tpr_merge <- function(tpr_data_path, extracted_data) {
   tpr_data <- read.csv(tpr_data_path)
   extracted_data_plus <- extracted_data %>%
     left_join(tpr_data %>% dplyr::select(WardName, u5_tpr_rdt), by = "WardName")
+}
 
+clean_extracted_data <- function(df) {
   # clean dataset before returning it
-  extracted_data_plus <- extracted_data_plus %>%
+  extracted_data_plus <- df %>%
     select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
     rename_with(~ gsub("\\.x$", "", .))  # remove .x suffix from column names
 }
 
-settlement_type_merge <- function(settlement_blocks_path, extracted_data, state_name) {
-  # read settlement blocks shapefile
-  settlement_blocks <- st_read(settlement_blocks_path) %>%
-    filter(state == state_name, landuse == 'Residential')
+settlement_type_merge <- function(settlement_block_shp, extracted_data, state_name) {
+
+  # filter settlement blocks shapefile
+  settlement_block_shp <- settlement_block_shp %>%
+    dplyr::filter(state == state_name, landuse == 'Residential')
+
+  extracted_data_shp <- st_as_sf(extracted_data)
 
   # ensure CRS alignment
-  extracted_data_shp <- st_as_sf(extracted_data, coords = c("longitude", "latitude"), crs = st_crs(settlement_blocks))
+  if (st_crs(extracted_data_shp) != st_crs(settlement_block_shp)) {
+    settlement_block_shp <- st_transform(settlement_block_shp, st_crs(extracted_data_shp))
+  }
 
   # spatial join to assign settlement type
-  settlement_data <- st_join(extracted_data_shp, settlement_blocks, join = sf::st_overlaps)
+  settlement_data <- st_join(extracted_data_shp, settlement_block_shp, join = sf::st_overlaps)
+
+  # disable s2 geometry processing
+  sf_use_s2(FALSE)
 
   # clean and format settlement data
   settlement_type_data <- settlement_data %>%
     dplyr::select(WardName, settlement_type = type) %>%
-    group_by(WardName, settlement_type) %>%
-    summarise(number = n(), .groups = "drop") %>%
-    pivot_wider(names_from = settlement_type, values_from = number, values_fill = 0) %>%
-    rowwise() %>%
-    mutate(total_settlement = sum(c_across(where(is.numeric))),
-           proportion_poor_settlement = ifelse(total_settlement > 0, `A` + `B` + `M` / total_settlement, 0)) %>%
-    ungroup() %>%
-    select(WardName, settlement_type = proportion_poor_settlement)
+    dplyr::group_by(WardName, settlement_type) %>%
+    dplyr::summarise(number = n(), .groups = "drop") %>%
+    tidyr::pivot_wider(names_from = settlement_type, values_from = number, values_fill = 0) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      A = ifelse("A" %in% names(.), A, 0),  # ensure 'A' exists
+      B = ifelse("B" %in% names(.), B, 0),  # ensure 'B' exists
+      M = ifelse("M" %in% names(.), M, 0),  # ensure 'M' exists
+      total_settlement = sum(c_across(where(is.numeric))),
+      proportion_poor_settlement = ifelse(total_settlement > 0, (A + B + M) / total_settlement, 0)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(WardName, settlement_type = proportion_poor_settlement)
 
   # merge with extracted data
   extracted_data_plus <- extracted_data %>%
@@ -235,12 +250,12 @@ settlement_type_merge <- function(settlement_blocks_path, extracted_data, state_
 #' @importFrom sf st_read
 #' @importFrom readxl read_xlsx
 #' @export
-create_reprioritization_map <- function(state_name, shp_dir, itn_dir,
+create_reprioritization_map <- function(state_name, shapefile, itn_dir,
                                         extracted_data, ranked_wards, map_output_dir,
                                         include_settlement_type, include_u5_tpr_data, scenarios) {
 
   # load shapefile, extracted covariates data, and ranked wards
-  state_shp <- st_read(shp_dir)
+  state_shp <- shapefile
 
   # load and clean variables
   state_variables <- extracted_data %>%
@@ -299,7 +314,7 @@ create_reprioritization_map <- function(state_name, shp_dir, itn_dir,
     temp_2023 = "Temperature (2023)", temp_2024 = "Temperature (2024)",
     housing_quality_path = "Housing Quality", ndwi_path = "NDWI", ndmi_path = "NDMI", pfpr_path = "PfPR",
     lights_path = "Night-Time Lights", surface_soil_wetness_path = "Surface Soil Wetness",
-    flood_path = "Flooding", settlement_block = "Settlement Block"
+    flood_path = "Flooding"
   )
   # check which files exist and collect their labels
   existing_variables <- sapply(names(raster_paths), function(var) {
@@ -325,7 +340,7 @@ create_reprioritization_map <- function(state_name, shp_dir, itn_dir,
     geom_sf(data = state_shp %>% left_join(combined_wards2, by = "WardName"),
             aes(geometry = geometry, fill = rank)) +
     scale_fill_gradient(name = "Rank", low = "lightyellow", high = "red", na.value = "grey") +
-    labs(title = paste("Malaria Risk Map in", state_name, "State"),
+    labs(title = paste("Malaria Risk Map of", state_name, "State"),
          caption = paste0("Variables included in composite score: ",
                           paste(existing_variables, collapse = ", "))) +
     map_theme()
@@ -343,9 +358,10 @@ create_reprioritization_map <- function(state_name, shp_dir, itn_dir,
       labs(
         title = paste0(s, "% Urban Scenario"),
         subtitle = paste(num_reprioritized_wards[[s]], "Reprioritized Wards"),
-        caption = paste0("Variables included in composite score: ",
-                         paste(existing_variables, collapse = ", "))
-      ) +
+        caption = paste0(
+          "Variables included in composite score:\n",
+          paste(existing_variables, collapse = ", ")
+      )) +
       map_theme() +
       theme(legend.position = "none",
             plot.subtitle = element_text(hjust = 0.5))
@@ -361,9 +377,19 @@ create_reprioritization_map <- function(state_name, shp_dir, itn_dir,
                    gp = gpar(fontsize = 12, fontface = "bold", hjust = 0.5))
   )
 
-  ggsave(filename = file.path(map_output_dir, paste0(Sys.Date(), "_", state_name, '_risk_map.pdf')),
+  # define the state-specific folder path
+  state_folder <- file.path(map_output_dir, state_name)
+
+  # check if the folder exists, if not, create it
+  if (!dir.exists(state_folder)) {
+    dir.create(state_folder)
+  }
+
+  # save the plots in the state-specific folder
+  ggsave(filename = file.path(state_folder, paste0(Sys.Date(), "_", state_name, "_risk_map.pdf")),
          plot = risk_map, width = 12, height = 8)
-  ggsave(filename = file.path(map_output_dir, paste0(Sys.Date(), "_", state_name, '_reprioritization_maps.pdf')),
+
+  ggsave(filename = file.path(state_folder, paste0(Sys.Date(), "_", state_name, "_reprioritization_maps.pdf")),
          plot = final_grid, width = 12, height = 8)
 
   return(list(risk_map = risk_map, reprioritization_map = final_grid))

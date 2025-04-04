@@ -78,3 +78,31 @@ get_urban_percentage <- function(urban_data_path) {
     return(urban_data)
   }
 }
+
+
+get_settlement_blocks <- function(settlement_block_path) {
+  if (!file.exists(settlement_block_path)) {
+    message("\n⚠️ Settlement blocks data is missing! This is needed to use settlement type in the composite score calculation. ⚠️")
+    message("To proceed, download the zipped shapefile from Google Drive.")
+    message("\n📌 Follow these steps:")
+
+    message("1️⃣  Open this Google Drive link:")
+    message("    🔗 https://drive.google.com/drive/folders/1afjdVOASmx_AspHONK1Pp-IwiY5UfkIJ?usp=sharing")
+
+    message("2️⃣  Download the zipped shapefile")
+
+    message("3️⃣  Save the downloaded zipped shapefile here: ", settlement_block_path)
+
+    message("4️⃣  Locate the downloaded zipped shapefile on your computer and unzip it.")
+
+    message("5️⃣  Add the filepath to the shapefile to settlement_block_path in the reprioritize() function.")
+
+    message("6️⃣  Rerun this function after saving the shapefile.")
+
+    stop("You specified that you would like to include settlement type in the composite score calculation. Please follow the steps above and try again.")
+  } else {
+    message("✅ Settlement block data found. Proceeding with analysis...")
+    settlement_block_shp <- sf::st_read(settlement_block_path)
+    return(settlement_block_shp)
+  }
+}
