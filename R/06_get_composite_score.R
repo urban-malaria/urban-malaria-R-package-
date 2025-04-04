@@ -68,7 +68,7 @@ calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_
     temp_2023 = "temp_2023", temp_2024 = "temp_2024",
     housing_quality_path = "housing_quality", ndwi_path = "NDWI", ndmi_path = "NDMI", pfpr_path = "pfpr",
     lights_path = "avgRAD", surface_soil_wetness_path = "mean_soil_wetness",
-    flood_path = "flood", settlement_type = "settlement_type"
+    flood_path = "flood"
   )
   # check which files exist and collect their labels
   supplied_variables <- sapply(names(raster_paths), function(var) {
@@ -129,7 +129,7 @@ calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_
 
   # clean column names for consistency
   data_normalized <- data_normalized %>%
-    select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
+    dplyr::select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
     rename_with(~ gsub("\\.x$", "", .))  # remove .x suffix from column names
 
   return(data_normalized)

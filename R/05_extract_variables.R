@@ -68,17 +68,20 @@
 #' }
 #'
 #' @export
-extract_raster_data <- function(state_name, shapefile_path, raster_paths) {
+extract_raster_data <- function(state_name, shapefile, raster_paths) {
 
-  message("Starting extract_variables for ", state_name)
+  # define expected output path
+  output_file <- file.path(raster_paths$output_dir, paste0(state_name, "_wards_variables.csv"))
+
+  # if the output already exists, read it and return
+  if (file.exists(output_file)) {
+    message("Extracted data file already exists for ", state_name, ", skipping extraction and reading from file.")
+    return(readr::read_csv(output_file))
+  }
 
   tryCatch({
-    # Load shapefile
-    message("Loading shapefile for ", state_name)
-    wards <- tryCatch({
-      sf::st_make_valid(st_read(shapefile_path))
-    }, error = function(e) stop("Failed to load shapefile: ", e$message))
 
+    wards <- shapefile
     empty_geo <- sf::st_is_empty(wards)
     wards <- wards[!empty_geo, ]
     wards_sp <- as(wards, "Spatial")
@@ -296,7 +299,9 @@ extract_raster_data <- function(state_name, shapefile_path, raster_paths) {
     return(output_variables)
 
   }, error = function(e) {
-    message("An error occurred while processing ", state_name, ": ", e$message)
-    NULL
+    message("Error during raster extraction for ", state_name, ": ", e$message)
+    return(NULL)
   })
 }
+
+
