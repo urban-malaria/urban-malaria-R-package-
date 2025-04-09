@@ -127,16 +127,20 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
 #'
 #' @import dplyr
 #' @export
-tpr_merge <- function(tpr_data_path, extracted_data) {
+tpr_merge <- function(tpr_data_path, extracted_data, state_name) {
   tpr_data <- read.csv(tpr_data_path)
+  # yobe has an extra entry for Hausari ward
+  if(state_name %in% c("Yobe", "yobe")) {
+    tpr_data <- tpr_data %>% dplyr::filter(X != 131)
+  }
   extracted_data_plus <- extracted_data %>%
-    left_join(tpr_data %>% dplyr::select(WardName, u5_tpr_rdt), by = "WardName")
+    left_join(tpr_data %>% dplyr::select(WardCode, WardName, LGA, u5_tpr_rdt), by = "WardCode")
 }
 
 clean_extracted_data <- function(df) {
   # clean dataset before returning it
   extracted_data_plus <- df %>%
-    select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
+    dplyr::select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
     rename_with(~ gsub("\\.x$", "", .))  # remove .x suffix from column names
 }
 
@@ -161,8 +165,8 @@ settlement_type_merge <- function(settlement_block_shp, extracted_data, state_na
 
   # clean and format settlement data
   settlement_type_data <- settlement_data %>%
-    dplyr::select(WardName, settlement_type = type) %>%
-    dplyr::group_by(WardName, settlement_type) %>%
+    dplyr::select(WardCode, WardName, settlement_type = type) %>%
+    dplyr::group_by(WardCode, WardName, settlement_type) %>%
     dplyr::summarise(number = n(), .groups = "drop") %>%
     tidyr::pivot_wider(names_from = settlement_type, values_from = number, values_fill = 0) %>%
     dplyr::rowwise() %>%
@@ -174,11 +178,11 @@ settlement_type_merge <- function(settlement_block_shp, extracted_data, state_na
       proportion_poor_settlement = ifelse(total_settlement > 0, (A + B + M) / total_settlement, 0)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(WardName, settlement_type = proportion_poor_settlement)
+    dplyr::select(WardCode, WardName, settlement_type = proportion_poor_settlement)
 
   # merge with extracted data
   extracted_data_plus <- extracted_data %>%
-    left_join(settlement_type_data, by = "WardName")
+    left_join(settlement_type_data, by = "WardCode")
 
   return(extracted_data_plus)
 }
@@ -257,6 +261,21 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
   # load shapefile, extracted covariates data, and ranked wards
   state_shp <- shapefile
 
+  if (state_name %in% c("Yobe", "yobe")) {
+    extracted_data <- extracted_data %>%
+      mutate(WardName = case_when(
+        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+        TRUE ~ WardName
+      ))
+    state_shp <- state_shp %>%
+      mutate(WardName = case_when(
+        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+        TRUE ~ WardName
+      ))
+  }
+
   # load and clean variables
   state_variables <- extracted_data %>%
     distinct(WardCode, .keep_all = TRUE) %>%
@@ -269,7 +288,7 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
     )
 
   # read and clean ITN data
-  state_itn_data <- read_xlsx(itn_dir)
+  state_itn_data <- read.csv(itn_dir)
 
   colnames(state_itn_data)[colnames(state_itn_data) == "AdminLevel3"] <- "Ward"
   colnames(state_itn_data)[colnames(state_itn_data) == "Row Labels"] <- "Ward"
@@ -278,14 +297,66 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
   colnames(state_itn_data)[colnames(state_itn_data) == "Sum of N_Nets"] <- "Population"
   colnames(state_itn_data)[colnames(state_itn_data) == "Num_ITN"] <- "Population"
 
-  state_itn_data <- state_itn_data %>%
-    dplyr::select(Population, Ward) %>%
-    group_by(Ward) %>%
-    summarise(Population = sum(Population, na.rm = TRUE))
+  # state_itn_data <- state_itn_data %>%
+  #   dplyr::select(Population, Ward) %>%
+  #   group_by(Ward) %>%
+  #   summarise(Population = sum(Population, na.rm = TRUE))
+
+  # if yobe state, add LGA labels to the two Hausari wards
+  if (state_name %in% c("Yobe", "yobe")) {
+    # state_variables <- state_variables %>%
+    #   mutate(WardName = case_when(
+    #     WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+    #     WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+    #     TRUE ~ WardName
+    #   ))
+    ranked_wards <- ranked_wards %>%
+      mutate(WardName = case_when(
+        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+        TRUE ~ WardName
+      ))
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Hausari" & LGA == "Nguru" ~ "Hausari (Nguru LGA)",
+        Ward == "Hausari" & LGA == "Geidam"  ~ "Hausari (Geidam LGA)",
+        TRUE ~ Ward
+      ))
+  }
+
+  # if niger state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Niger", "niger")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Magajiya" & LGA == "Suleja" ~ "Magajiya (Suleja LGA)",
+        Ward == "Magajiya" & LGA == "Kontagora"  ~ "Magajiya (Kontagora LGA)",
+        Ward == "Sabon Gari" & LGA == "Rafi" ~ "Sabon Gari (Rafi LGA)",
+        Ward == "Sabon Gari" & LGA == "Chanchaga"  ~ "Sabon Gari (Chanchaga LGA)",
+        Ward == "Sabon Gari" & LGA == "Wushishi"  ~ "Sabon Gari (Wushishi LGA)",
+        Ward == "Kodo" & LGA == "Bosso" ~ "Kodo (Bosso LGA)",
+        Ward == "Kodo" & LGA == "Wushishi"  ~ "Kodo (Wushishi LGA)",
+        Ward == "Kudu" & LGA == "Kontagora" ~ "Kudu (Kontagora LGA)",
+        Ward == "Kudu" & LGA == "Mokwa"  ~ "Kudu (Mokwa LGA)",
+        Ward == "Kawo" & LGA == "Kontagora" ~ "Kawo (Kontagora LGA)",
+        Ward == "Kawo" & LGA == "Magama"  ~ "Kawo (Magama LGA)",
+        TRUE ~ Ward
+      ))
+  }
 
   # merge data
   combined_wards <- left_join(state_variables, ranked_wards, by = "WardName")
   combined_wards2 <- left_join(combined_wards, state_itn_data, by = c("WardName" = "Ward"))
+
+  # delete any duplicate columns
+  combined_wards2 <- combined_wards2[!duplicated(combined_wards2), ]
+
+  # define the state-specific folder path
+  state_folder <- file.path(map_output_dir, state_name)
+
+  # check if the folder exists, if not, create it
+  if (!dir.exists(state_folder)) {
+    dir.create(state_folder)
+  }
 
   # run prioritized wards only for selected scenarios, get number of reprioritized wards in each scenario
   prioritized_wards <- list()
@@ -293,18 +364,22 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
   if (20 %in% scenarios) {
     prioritized_wards[["20"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_20", "WardName", 30)
     num_reprioritized_wards[["20"]] <- nrow(prioritized_wards[["20"]])
+    write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_20.csv")), x = prioritized_wards[["20"]])
   }
   if (30 %in% scenarios) {
     prioritized_wards[["30"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_30", "WardName", 30)
     num_reprioritized_wards[["30"]] <- nrow(prioritized_wards[["30"]])
+    write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_30.csv")), x = prioritized_wards[["30"]])
   }
   if (50 %in% scenarios) {
     prioritized_wards[["50"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_50", "WardName", 30)
     num_reprioritized_wards[["50"]] <- nrow(prioritized_wards[["50"]])
+    write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_50.csv")), x = prioritized_wards[["50"]])
   }
   if (75 %in% scenarios) {
     prioritized_wards[["75"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_75", "WardName", 30)
     num_reprioritized_wards[["75"]] <- nrow(prioritized_wards[["75"]])
+    write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_75.csv")), x = prioritized_wards[["75"]])
   }
 
   # write list of variables included in composite score calculations (add to caption on maps)
@@ -376,14 +451,6 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
     top = textGrob(paste("Reprioritization Scenarios in", state_name),
                    gp = gpar(fontsize = 12, fontface = "bold", hjust = 0.5))
   )
-
-  # define the state-specific folder path
-  state_folder <- file.path(map_output_dir, state_name)
-
-  # check if the folder exists, if not, create it
-  if (!dir.exists(state_folder)) {
-    dir.create(state_folder)
-  }
 
   # save the plots in the state-specific folder
   ggsave(filename = file.path(state_folder, paste0(Sys.Date(), "_", state_name, "_risk_map.pdf")),

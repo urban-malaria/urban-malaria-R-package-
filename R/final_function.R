@@ -33,17 +33,70 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   urban_data <- get_urban_percentage(urban_data_path)
 
   message("Merging extracted data with urban percentage data...")
-  extracted_data <- base::merge(extracted_data, urban_data, by = "WardName", all.x = TRUE)
+  extracted_data <- base::merge(extracted_data, urban_data, by = "WardCode", all.x = TRUE)
+  extracted_data <- clean_extracted_data(extracted_data)
+
+  if (state_name %in% c("Niger", "niger")) {
+    extracted_data <- extracted_data %>%
+      mutate(WardName = case_when(
+        WardName == "Magajiya" & LGACode == "27011" ~ "Magajiya (Kontagora LGA)",
+        WardName == "Magajiya" & LGACode == "27023"  ~ "Magajiya (Suleja LGA)",
+        WardName == "Sabon Gari" & LGACode == "27020"  ~ "Sabon Gari (Rafi LGA)",
+        WardName == "Sabon Gari" & LGACode == "27006"  ~ "Sabon Gari (Chanchaga LGA)",
+        WardName == "Sabon Gari" & LGACode == "27025"  ~ "Sabon Gari (Wushishi LGA)",
+        WardName == "Kodo" & LGACode == "27005" ~ "Kodo (Bosso LGA)",
+        WardName == "Kodo" & LGACode == "27025"  ~ "Kodo (Wushishi LGA)",
+        WardName == "Kudu" & LGACode == "27011" ~ "Kudu (Kontagora LGA)",
+        WardName == "Kudu" & LGACode == "27017"  ~ "Kudu (Mokwa LGA)",
+        WardName == "Kawo" & LGACode == "27011" ~ "Kawo (Kontagora LGA)",
+        WardName == "Kawo" & LGACode == "27014"  ~ "Kawo (Magama LGA)",
+        TRUE ~ WardName
+      ))
+    state_shapefile <- state_shapefile %>%
+      mutate(WardName = case_when(
+        WardName == "Magajiya" & LGACode == "27011" ~ "Magajiya (Kontagora LGA)",
+        WardName == "Magajiya" & LGACode == "27023"  ~ "Magajiya (Suleja LGA)",
+        WardName == "Sabon Gari" & LGACode == "27020"  ~ "Sabon Gari (Rafi LGA)",
+        WardName == "Sabon Gari" & LGACode == "27006"  ~ "Sabon Gari (Chanchaga LGA)",
+        WardName == "Sabon Gari" & LGACode == "27025"  ~ "Sabon Gari (Wushishi LGA)",
+        WardName == "Kodo" & LGACode == "27005" ~ "Kodo (Bosso LGA)",
+        WardName == "Kodo" & LGACode == "27025"  ~ "Kodo (Wushishi LGA)",
+        WardName == "Kudu" & LGACode == "27011" ~ "Kudu (Kontagora LGA)",
+        WardName == "Kudu" & LGACode == "27017"  ~ "Kudu (Mokwa LGA)",
+        WardName == "Kawo" & LGACode == "27011" ~ "Kawo (Kontagora LGA)",
+        WardName == "Kawo" & LGACode == "27014"  ~ "Kawo (Magama LGA)",
+        TRUE ~ WardName
+      ))
+  }
 
   if(include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
     message("Merging TPR data with extracted data...")
     extracted_data_plus <- tpr_merge(
       tpr_data_path = tpr_data_path,
-      extracted_data = extracted_data
+      extracted_data = extracted_data,
+      state_name = state_name
     )
     extracted_data_plus <- clean_extracted_data(extracted_data_plus)
-  } else {
-    extracted_data_plus <- clean_extracted_data(extracted_data)
+  }
+
+  if (state_name %in% c("Niger", "niger")) {
+    extracted_data_plus <- extracted_data_plus %>%
+      filter(
+          !(WardName == "Magajiya (Kontagora LGA)" & LGA == "Suleja") &
+          !(WardName == "Magajiya (Suleja LGA)" & LGA == "Kontagora") &
+          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Wushishi") &
+          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Rafi") &
+          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Chanchaga") &
+          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Rafi") &
+          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Wushishi") &
+          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Chanchaga") &
+          !(WardName == "Kodo (Bosso LGA)" & LGA == "Wushishi") &
+          !(WardName == "Kodo (Wushishi LGA)" & LGA == "Bosso") &
+          !(WardName == "Kudu (Kontagora LGA)" & LGA == "Mokwa") &
+          !(WardName == "Kudu (Mokwa LGA)" & LGA == "Kontagora") &
+          !(WardName == "Kawo (Kontagora LGA)" & LGA == "Magama") &
+          !(WardName == "Kawo (Magama LGA)" & LGA == "Kontagora")
+      )
   }
 
   # check for settlement blocks data and prompt user to download it if they haven't already
