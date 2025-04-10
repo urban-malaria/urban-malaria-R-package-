@@ -9,7 +9,7 @@ StateShpDir <- file.path(DriveDir, "data/nigeria/nigeria_shapefiles/shapefiles/S
 ITNDir <- file.path(DataDir, "nigeria/ITN_distribution")
 RastersDir <- file.path(DriveDir, "data/nigeria/Raster_files")
 
-# example final function call
+# final function call for each state:
 
 # YOBE
 results <- reprioritize(
@@ -71,7 +71,6 @@ results <- reprioritize(
   scenarios = c(20, 30, 50, 75)
 )
 
-
 # NIGER
 results <- reprioritize(
   state_name = "Niger",
@@ -92,14 +91,6 @@ results <- reprioritize(
   scenarios = c(20, 30, 50, 75)
 )
 
-# niger_shp <- st_read(shapefile_path)
-# kawo_shp <- niger_shp %>% dplyr::filter(WardName == "Kawo" & LGACode == 27011)
-#
-# niger_map <- ggplot() +
-#   geom_sf(data = niger_shp, aes(geometry = geometry), color = "grey50", fill = NA, linewidth = 0.6) +
-#   geom_sf(data = kawo_shp, fill = "red", color = "black", linewidth = 1)
-# niger_map
-
 # TARABA
 results <- reprioritize(
   state_name = "Taraba",
@@ -119,7 +110,6 @@ results <- reprioritize(
   include_u5_tpr_data = "Yes",
   scenarios = c(20, 30, 50, 75)
 )
-
 
 # KADUNA
 results <- reprioritize(

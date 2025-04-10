@@ -133,6 +133,7 @@ tpr_merge <- function(tpr_data_path, extracted_data, state_name) {
   if(state_name %in% c("Yobe", "yobe")) {
     tpr_data <- tpr_data %>% dplyr::filter(X != 131)
   }
+
   extracted_data_plus <- extracted_data %>%
     left_join(tpr_data %>% dplyr::select(WardCode, WardName, LGA, u5_tpr_rdt), by = "WardCode")
 }
@@ -339,6 +340,37 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
         Ward == "Kudu" & LGA == "Mokwa"  ~ "Kudu (Mokwa LGA)",
         Ward == "Kawo" & LGA == "Kontagora" ~ "Kawo (Kontagora LGA)",
         Ward == "Kawo" & LGA == "Magama"  ~ "Kawo (Magama LGA)",
+        TRUE ~ Ward
+      ))
+  }
+
+  # if kaduna state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Kaduna", "kaduna")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Kaura" & LGA == "Kaura" ~ "Kaura (Kaura LGA)",
+        Ward == "Kaura" & LGA == "Zaria"  ~ "Kaura (Zaria LGA)",
+        Ward == "Tudun Wada" & LGA == "Makarfi" ~ "Tudun Wada (Makarfi LGA)",
+        Ward == "Tudun Wada" & LGA == "Zaria"  ~ "Tudun Wada (Zaria LGA)",
+        Ward == "Fada" & LGA == "Jaba" ~ "Fada (Jaba LGA)",
+        Ward == "Fada" & LGA == "Kaura"  ~ "Fada (Kaura LGA)",
+        Ward == "Kakangi" & LGA == "Birnin Gwari" ~ "Kakangi (Birnin Gwari LGA)",
+        Ward == "Kakangi" & LGA == "Giwa"  ~ "Kakangi (Giwa LGA)",
+        Ward == "Sabon Birnin" & LGA == "Igabi"  ~ "Sabon Birnin (Igabi LGA)",
+        Ward == "Zabi" & LGA == "Kubau" ~ "Zabi (Kubau LGA)",
+        Ward == "Zabi" & LGA == "Kudan"  ~ "Zabi (Kudan LGA)",
+        Ward == "Zabi" & LGA == "Sabon Gari"  ~ "Zabi (Sabon Gari LGA)",
+        TRUE ~ Ward
+      )) %>%
+    dplyr::filter(!(Ward == "Doka" & LGA == "Kachia"))
+  }
+
+  # if kaduna state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Katsina", "katsina")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Sabon Gari" & LGA == "Daura" ~ "Sabon Gari (Daura LGA)",
+        Ward == "Sabon Gari" & LGA == "Funtua"  ~ "Sabon Gari (Funtua LGA)",
         TRUE ~ Ward
       ))
   }
