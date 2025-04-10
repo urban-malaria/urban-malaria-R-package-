@@ -36,41 +36,15 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   extracted_data <- base::merge(extracted_data, urban_data, by = "WardCode", all.x = TRUE)
   extracted_data <- clean_extracted_data(extracted_data)
 
-  if (state_name %in% c("Niger", "niger")) {
-    extracted_data <- extracted_data %>%
-      mutate(WardName = case_when(
-        WardName == "Magajiya" & LGACode == "27011" ~ "Magajiya (Kontagora LGA)",
-        WardName == "Magajiya" & LGACode == "27023"  ~ "Magajiya (Suleja LGA)",
-        WardName == "Sabon Gari" & LGACode == "27020"  ~ "Sabon Gari (Rafi LGA)",
-        WardName == "Sabon Gari" & LGACode == "27006"  ~ "Sabon Gari (Chanchaga LGA)",
-        WardName == "Sabon Gari" & LGACode == "27025"  ~ "Sabon Gari (Wushishi LGA)",
-        WardName == "Kodo" & LGACode == "27005" ~ "Kodo (Bosso LGA)",
-        WardName == "Kodo" & LGACode == "27025"  ~ "Kodo (Wushishi LGA)",
-        WardName == "Kudu" & LGACode == "27011" ~ "Kudu (Kontagora LGA)",
-        WardName == "Kudu" & LGACode == "27017"  ~ "Kudu (Mokwa LGA)",
-        WardName == "Kawo" & LGACode == "27011" ~ "Kawo (Kontagora LGA)",
-        WardName == "Kawo" & LGACode == "27014"  ~ "Kawo (Magama LGA)",
-        TRUE ~ WardName
-      ))
-    state_shapefile <- state_shapefile %>%
-      mutate(WardName = case_when(
-        WardName == "Magajiya" & LGACode == "27011" ~ "Magajiya (Kontagora LGA)",
-        WardName == "Magajiya" & LGACode == "27023"  ~ "Magajiya (Suleja LGA)",
-        WardName == "Sabon Gari" & LGACode == "27020"  ~ "Sabon Gari (Rafi LGA)",
-        WardName == "Sabon Gari" & LGACode == "27006"  ~ "Sabon Gari (Chanchaga LGA)",
-        WardName == "Sabon Gari" & LGACode == "27025"  ~ "Sabon Gari (Wushishi LGA)",
-        WardName == "Kodo" & LGACode == "27005" ~ "Kodo (Bosso LGA)",
-        WardName == "Kodo" & LGACode == "27025"  ~ "Kodo (Wushishi LGA)",
-        WardName == "Kudu" & LGACode == "27011" ~ "Kudu (Kontagora LGA)",
-        WardName == "Kudu" & LGACode == "27017"  ~ "Kudu (Mokwa LGA)",
-        WardName == "Kawo" & LGACode == "27011" ~ "Kawo (Kontagora LGA)",
-        WardName == "Kawo" & LGACode == "27014"  ~ "Kawo (Magama LGA)",
-        TRUE ~ WardName
-      ))
-  }
+  # add LGA name to wards that have duplicate names
+  extracted_data <- clean_extracted(state_name, extracted_data)
+  state_shapefile <- clean_shapefile(state_name, state_shapefile)
 
   if(include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
     message("Merging TPR data with extracted data...")
+    # delete any duplicate columns
+    extracted_data <- extracted_data[!duplicated(extracted_data), ]
+
     extracted_data_plus <- tpr_merge(
       tpr_data_path = tpr_data_path,
       extracted_data = extracted_data,
@@ -99,6 +73,9 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
       )
   }
 
+  # clean duplicates from merge
+  extracted_data_plus <- clean_extracted_plus(state_name, extracted_data_plus)
+
   # check for settlement blocks data and prompt user to download it if they haven't already
   if(include_settlement_type == "Yes" || include_settlement_type == "yes") {
     message("Getting settlement blocks data...")
@@ -106,6 +83,9 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
     extracted_data_plus <- settlement_type_merge(settlement_block_shp, extracted_data_plus, state_name)
     extracted_data_plus <- clean_extracted_data(extracted_data_plus)
   }
+
+  # delete any duplicate columns
+  extracted_data_plus <- extracted_data_plus[!duplicated(extracted_data_plus), ]
 
   message("Calculating composite malaria risk scores...")
   malaria_risk_scores <- calculate_malaria_risk_scores(
