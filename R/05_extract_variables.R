@@ -68,7 +68,7 @@
 #' }
 #'
 #' @export
-extract_raster_data <- function(state_name, shapefile, raster_paths) {
+extract_raster_data <- function(state_name, state_shapefile, raster_paths) {
 
   # define expected output path
   output_file <- file.path(raster_paths$output_dir, paste0(state_name, "_wards_variables.csv"))
@@ -81,7 +81,7 @@ extract_raster_data <- function(state_name, shapefile, raster_paths) {
 
   tryCatch({
 
-    wards <- shapefile
+    wards <- state_shapefile
     empty_geo <- sf::st_is_empty(wards)
     wards <- wards[!empty_geo, ]
     wards_sp <- as(wards, "Spatial")

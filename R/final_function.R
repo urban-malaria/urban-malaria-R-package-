@@ -23,23 +23,21 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   }, error = function(e) stop("Failed to load shapefile: ", e$message))
 
   message("Extracting raster data...")
-  extracted_data <- extract_raster_data(
-    state_name = state_name,
-    shapefile = state_shapefile,
-    raster_paths = raster_paths
-  )
+  extracted_data <- extract_raster_data(state_name, state_shapefile, raster_paths)
 
   # check for urban percentage data and prompt user to download it if they haven't already
   urban_data <- get_urban_percentage(urban_data_path)
 
+  # merge the extracted data with the urban percentage data, then clean up the column names
   message("Merging extracted data with urban percentage data...")
   extracted_data <- base::merge(extracted_data, urban_data, by = "WardCode", all.x = TRUE)
   extracted_data <- clean_extracted_data(extracted_data)
 
   # add LGA name to wards that have duplicate names
-  extracted_data <- clean_extracted(state_name, extracted_data)
-  state_shapefile <- clean_shapefile(state_name, state_shapefile)
+  # extracted_data <- clean_extracted(state_name, extracted_data)
+  # state_shapefile <- clean_shapefile(state_name, state_shapefile)
 
+  # merge the extracted data with the TPR data
   if(include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
     message("Merging TPR data with extracted data...")
     # delete any duplicate columns
@@ -53,30 +51,30 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
     extracted_data_plus <- clean_extracted_data(extracted_data_plus)
   }
 
-  if (state_name %in% c("Niger", "niger")) {
-    extracted_data_plus <- extracted_data_plus %>%
-      filter(
-          !(WardName == "Magajiya (Kontagora LGA)" & LGA == "Suleja") &
-          !(WardName == "Magajiya (Suleja LGA)" & LGA == "Kontagora") &
-          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Wushishi") &
-          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Rafi") &
-          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Chanchaga") &
-          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Rafi") &
-          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Wushishi") &
-          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Chanchaga") &
-          !(WardName == "Kodo (Bosso LGA)" & LGA == "Wushishi") &
-          !(WardName == "Kodo (Wushishi LGA)" & LGA == "Bosso") &
-          !(WardName == "Kudu (Kontagora LGA)" & LGA == "Mokwa") &
-          !(WardName == "Kudu (Mokwa LGA)" & LGA == "Kontagora") &
-          !(WardName == "Kawo (Kontagora LGA)" & LGA == "Magama") &
-          !(WardName == "Kawo (Magama LGA)" & LGA == "Kontagora")
-      )
-  }
+  # if (state_name %in% c("Niger", "niger")) {
+  #   extracted_data_plus <- extracted_data_plus %>%
+  #     filter(
+  #         !(WardName == "Magajiya (Kontagora LGA)" & LGA == "Suleja") &
+  #         !(WardName == "Magajiya (Suleja LGA)" & LGA == "Kontagora") &
+  #         !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Wushishi") &
+  #         !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Rafi") &
+  #         !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Chanchaga") &
+  #         !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Rafi") &
+  #         !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Wushishi") &
+  #         !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Chanchaga") &
+  #         !(WardName == "Kodo (Bosso LGA)" & LGA == "Wushishi") &
+  #         !(WardName == "Kodo (Wushishi LGA)" & LGA == "Bosso") &
+  #         !(WardName == "Kudu (Kontagora LGA)" & LGA == "Mokwa") &
+  #         !(WardName == "Kudu (Mokwa LGA)" & LGA == "Kontagora") &
+  #         !(WardName == "Kawo (Kontagora LGA)" & LGA == "Magama") &
+  #         !(WardName == "Kawo (Magama LGA)" & LGA == "Kontagora")
+  #     )
+  # }
 
   # clean duplicates from merge
-  extracted_data_plus <- clean_extracted_plus(state_name, extracted_data_plus)
+  # extracted_data_plus <- clean_extracted_plus(state_name, extracted_data_plus)
 
-  # check for settlement blocks data and prompt user to download it if they haven't already
+  # check for settlement blocks data and prompt user to download it if they haven't already. If the user supplied them, merge them with the extracted data.
   if(include_settlement_type == "Yes" || include_settlement_type == "yes") {
     message("Getting settlement blocks data...")
     settlement_block_shp <- get_settlement_blocks(settlement_block_path)
@@ -85,31 +83,17 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   }
 
   # delete any duplicate columns
-  extracted_data_plus <- extracted_data_plus[!duplicated(extracted_data_plus), ]
+  # extracted_data_plus <- extracted_data_plus[!duplicated(extracted_data_plus), ]
 
   message("Calculating composite malaria risk scores...")
-  malaria_risk_scores <- calculate_malaria_risk_scores(
-    extracted_data = extracted_data_plus,
-    raster_paths = raster_paths,
-    include_settlement_type = include_settlement_type,
-    include_u5_tpr_data = include_u5_tpr_data
-  )
+  malaria_risk_scores <- calculate_malaria_risk_scores(extracted_data_plus, raster_paths, include_settlement_type, include_u5_tpr_data)
 
   message("Ranking wards by risk score...")
   ranked_wards <- rank(malaria_risk_scores)
 
   message("Reprioritizing and creating maps...")
-  maps <- create_reprioritization_map(
-    state_name = state_name,
-    shapefile = state_shapefile,
-    itn_dir = itn_dir,
-    extracted_data = extracted_data_plus,
-    ranked_wards = ranked_wards,
-    map_output_dir = map_output_dir,
-    include_settlement_type = include_settlement_type,
-    include_u5_tpr_data = include_u5_tpr_data,
-    scenarios = scenarios
-  )
+  maps <- create_reprioritization_map(state_name, state_shapefile, itn_dir, extracted_data_plus, ranked_wards,
+                                      map_output_dir, include_settlement_type, include_u5_tpr_data, scenarios)
 
   message("Reprioritization process for ", state_name, " completed.")
   return(maps)
