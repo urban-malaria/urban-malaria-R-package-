@@ -58,7 +58,7 @@ normalize <- function(x) {
 #' @import dplyr
 #' @importFrom rlang sym
 #' @export
-calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_settlement_type, include_u5_tpr_data) {
+calculate_malaria_risk_scores <- function(extracted_data_plus, raster_paths, include_settlement_type, include_u5_tpr_data) {
 
   # use user-inputted raster paths list to get list of covariates for use in risk score calculation
   # write list of variables included in composite score calculations (add to caption on maps)
@@ -83,7 +83,7 @@ calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_
   covariates = paste(supplied_variables)
 
   # ensure covariates exist in data
-  covariates <- covariates[covariates %in% names(extracted_data)]
+  covariates <- covariates[covariates %in% names(extracted_data_plus)]
 
   # if user said "yes" to including settlement type and u5 tpr data, add them to covariate list
   if (include_settlement_type == "Yes" || include_settlement_type == "yes") {
@@ -99,7 +99,7 @@ calculate_malaria_risk_scores <- function(extracted_data, raster_paths, include_
   message("covariate check passed")
 
   # normalize selected covariates
-  data_normalized <- extracted_data %>%
+  data_normalized <- extracted_data_plus %>%
     mutate(across(all_of(covariates), normalize, .names = "norm_{.col}"))
   message("data normalized.")
 

@@ -74,6 +74,18 @@ clean_extracted <- function(state_name, extracted_data, state_shapefile) {
       )) %>%
       dplyr::filter(!(WardName == "Garu" & LGACode == 19021))
   }
+
+  if (state_name %in% c("Taraba", "taraba")) {
+    extracted_data <- extracted_data %>%
+      mutate(WardName = case_when(
+        WardName == "Suntai" & LGACode == 35002 ~ "Suntai (Bali LGA)",
+        WardName == "Suntai" & LGACode == 35003 ~ "Suntai (Donga LGA)",
+        TRUE ~ WardName
+      )) %>%
+      dplyr::filter(!(WardName == "Garu" & LGACode == 19021))
+  }
+
+  return(extracted_data)
 }
 
 clean_shapefile <- function(state_name, state_shapefile) {
@@ -142,6 +154,18 @@ clean_shapefile <- function(state_name, state_shapefile) {
         TRUE ~ WardName
       ))
   }
+
+  if (state_name %in% c("Taraba", "taraba")) {
+    state_shapefile <- state_shapefile %>%
+      mutate(WardName = case_when(
+        WardName == "Suntai" & LGACode == 35002 ~ "Suntai (Bali LGA)",
+        WardName == "Suntai" & LGACode == 35003 ~ "Suntai (Donga LGA)",
+        TRUE ~ WardName
+      )) %>%
+      dplyr::filter(!(WardName == "Garu" & LGACode == 19021))
+  }
+
+  return(state_shapefile)
 }
 
 clean_extracted_plus <- function(state_name, extracted_data_plus) {
@@ -167,4 +191,5 @@ clean_extracted_plus <- function(state_name, extracted_data_plus) {
         LGA = ifelse(WardName == "Mazoji B (Matazu LGA)", "Matazu", LGA),
       )
   }
+  return(extracted_data_plus)
 }

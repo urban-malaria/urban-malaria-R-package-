@@ -79,7 +79,7 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
     ward_population <- ward[[population_col]]
     cumulative_population <- cumulative_population + ward_population
     current_percentage <- (ward_population / total_population) * 100
-    WardCode_x <- c(WardCode_x, ward$WardCode.x)
+    WardCode_x <- c(WardCode_x, ward$WardCode)
 
     ward_populations <- c(ward_populations, ward_population)
     ward_percentages <- c(ward_percentages, round(current_percentage, 2))
@@ -255,30 +255,27 @@ settlement_type_merge <- function(settlement_block_shp, extracted_data, state_na
 #' @importFrom sf st_read
 #' @importFrom readxl read_xlsx
 #' @export
-create_reprioritization_map <- function(state_name, shapefile, itn_dir,
-                                        extracted_data, ranked_wards, map_output_dir,
+create_reprioritization_map <- function(state_name, state_shapefile, itn_dir,
+                                        extracted_data_plus, ranked_wards, map_output_dir,
                                         include_settlement_type, include_u5_tpr_data, scenarios) {
 
-  # load shapefile, extracted covariates data, and ranked wards
-  state_shp <- shapefile
-
-  if (state_name %in% c("Yobe", "yobe")) {
-    extracted_data <- extracted_data %>%
-      mutate(WardName = case_when(
-        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
-        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
-        TRUE ~ WardName
-      ))
-    state_shp <- state_shp %>%
-      mutate(WardName = case_when(
-        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
-        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
-        TRUE ~ WardName
-      ))
-  }
+  # if (state_name %in% c("Yobe", "yobe")) {
+  #   extracted_data <- extracted_data %>%
+  #     mutate(WardName = case_when(
+  #       WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+  #       WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+  #       TRUE ~ WardName
+  #     ))
+  #   state_shp <- state_shp %>%
+  #     mutate(WardName = case_when(
+  #       WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+  #       WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+  #       TRUE ~ WardName
+  #     ))
+  # }
 
   # load and clean variables
-  state_variables <- extracted_data %>%
+  state_variables <- extracted_data_plus %>%
     distinct(WardCode, .keep_all = TRUE) %>%
     dplyr::select(WardCode, WardName, urbanPercentage) %>%
     mutate(
@@ -288,96 +285,204 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
       classification_75 = ifelse(urbanPercentage > 75, "Urban", "Rural")
     )
 
-  # read and clean ITN data
-  state_itn_data <- read.csv(itn_dir)
+  # read in and clean ITN data
+  state_itn_data <- read_excel(itn_dir)
 
-  colnames(state_itn_data)[colnames(state_itn_data) == "AdminLevel3"] <- "Ward"
-  colnames(state_itn_data)[colnames(state_itn_data) == "Row Labels"] <- "Ward"
-  colnames(state_itn_data)[colnames(state_itn_data) == "WardName"] <- "Ward"
-  colnames(state_itn_data)[colnames(state_itn_data) == "N_FamilyMembers"] <- "Population"
-  colnames(state_itn_data)[colnames(state_itn_data) == "Sum of N_Nets"] <- "Population"
-  colnames(state_itn_data)[colnames(state_itn_data) == "Num_ITN"] <- "Population"
+  # state_itn_data <- state_itn_data %>%
+  #   rename(Population = `Sum of N_FamilyMembers`)
+
+  state_itn_data <- state_itn_data %>%
+    rename(Ward = `AdminLevel3`) %>%
+    dplyr::select(population = `N_FamilyMembers`, Ward) %>%
+    group_by(Ward) %>%
+    summarise(Population = sum(population, na.rm = TRUE)) %>%
+    ungroup() %>%
+    mutate(num = 1:n())
+
+  if(state_name == "Taraba" || state_name == "taraba") {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Majindadi" ~ "Majidadi",
+        TRUE ~ Ward
+      )) %>%
+      filter(Ward != "" & !is.na(Ward))
+  }
+
+  if(state_name == "Delta" || state_name == "delta") {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Aballa/ Inyi/ Onuaboh" ~	"Aballa/Inyi/Onuaboh",
+        Ward == "Abbi 1" ~	"Abbi 8",
+        Ward == "Abbi 2" ~	"Abbi 9",
+        Ward == "Aboh/ Akarai" ~	"Aboh/Akarai",
+        Ward == "Abraka" ~	"Abraka I",
+        Ward == "Achalla/Ezukwu/Ogboli" ~	"",
+        Ward == "Afor/ Obikwele" ~	"Afor/Obikwele",
+        Ward == "Agbarho I" ~	"Agbarho 1",
+        Ward == "Agbarho II" ~	"Agbarho 2",
+        Ward == "Agbor Obi" ~	"Agbor-Obi 1/Agbor Town II",
+        Ward == "Agbor Obi Ward 2" ~	"",
+        Ward == "Agbor-Nta" ~	"Agbor-Nta/Agbor Town I",
+        Ward == "Agidiasi" ~	"Agiadiasi",
+        Ward == "Ajudabo" ~	"Ajudaibo",
+        Ward == "Akugbene 3" ~	"Akugbene III",
+        Ward == "Akwuebulu" ~	"Akuebolu",
+        Ward == "Alihagwu" ~	"Alihagwu/Ihiuiyase I",
+        Ward == "Arigborodo" ~	"Abigborodo",
+        Ward == "Ashaka/ Ushie" ~	"Ashaka/Ushie",
+        Ward == "Boji Boji 1" ~	"Boji-Boji Owa 1/Owa III",
+        Ward == "Boji Boji Agbor 1" ~	"Boji-Boji I/ Agbor 7",
+        Ward == "Boji Boji Agbor 2" ~	"Boji-Boji II/ Agbor 8",
+        Ward == "Boji Boji Owa 2" ~	"Boji-Boji Owa 2/Owa IV",
+        Ward == "Egbo" ~	"Egbo/Agbon  VII",
+        Ward == "Egini" ~	"Egini/Ovwian II",
+        Ward == "Egodor" ~	"",
+        Ward == "Ejeme/ Egbudu" ~	"Ejeme/Egbudu",
+        Ward == "Ekametagbene/Kalafio" ~	"",
+        Ward == "Ekpan I" ~	"Ekpan 9",
+        Ward == "Ekpan II" ~	"Ekpan 10",
+        Ward == "Eku" ~	"Eku/Agbon  VI",
+        Ward == "Enerhen 1" ~	"Enerhen 3",
+        Ward == "Enerhen I" ~	"",
+        Ward == "Enerhen II" ~	"Enerhen 4",
+        Ward == "Ewulu/ Isheagu" ~	"Ewulu/Isheagu",
+        Ward == "Ibedeni/ Azagba" ~	"Ibedeni/Azagba",
+        Ward == "Iberede/Onu/Iyede-Ame" ~	"Ibrede/Onu/Iyede-Ame",
+        Ward == "Idumuje-Umor" ~	"Idumuje-Unor",
+        Ward == "Igun" ~	"Igun/Agbon  V",
+        Ward == "Irri 1" ~	"Irri 10",
+        Ward == "Irri 2" ~	"Irri 11",
+        Ward == "Isiokolo" ~	"Isiokolo/Agbon  VIII",
+        Ward == "Kokori" ~	"Kokori/Agbon  III",
+        Ward == "Mandangho" ~	"Madangho",
+        Ward == "Ogbe - Obiaruku" ~	"Ogbeobiaruku",
+        Ward == "Ogbe-Udu" ~	"Ogbe Udu",
+        Ward == "Ogbudugbudu" ~	"Okbudugbudu",
+        Ward == "Ogharefe 1" ~	"Ogharefe 1/Oghara I",
+        Ward == "Ogharefe 2" ~	"Ogharefe 2/Oghara II",
+        Ward == "Ogharefe 3" ~	"Ogharefe 3/Oghara III",
+        Ward == "Oghareki 1" ~	"",
+        Ward == "Oghareki 2" ~	"",
+        Ward == "Ogor" ~	"",
+        Ward == "Ogume 1" ~	"Ogume 6",
+        Ward == "Ogume 2" ~	"Ogume 7",
+        Ward == "Oko-Ogbele" ~	"Oko Ogbele",
+        Ward == "Okpanam/ Ugbolu" ~	"Okpanam/Ugbolu",
+        Ward == "Okpara" ~	"Okpara/Agbon  I",
+        Ward == "Okuzu" ~	"Okuzu/Obiaruku  II",
+        Ward == "Olomu 3" ~	"Olomu 3-Effurun-Otor",
+        Ward == "Orhaorpo" ~	"Orhaorpo/Agbon  IV",
+        Ward == "Oria" ~	"Oria/Abraka  III",
+        Ward == "Orogun I" ~	"Orogun 1",
+        Ward == "Orogun II" ~	"Orogun 2-Erhobaro",
+        Ward == "Otor-Udu" ~	"Otor Udu/Udu I",
+        Ward == "Ovu" ~	"Ovu/Agbon  II",
+        Ward == "Owa- Alizomor" ~	"Owa-Alizomor/Owa  VI",
+        Ward == "Owa Oyibu" ~	"Owa-Oyibu",
+        Ward == "Owa-Alero" ~	"Owa-Alero/Owa II",
+        Ward == "Owanta" ~	"Owanta/Owa  V",
+        Ward == "Owhe Ward 1" ~	"Owhe 1",
+        Ward == "Owhe Ward 2" ~	"Owhe 2",
+        Ward == "Owhe Ward 3" ~	"Owhe 3",
+        Ward == "Owhrode" ~	"Owhrode/Udu II",
+        Ward == "Oyede Ward" ~	"Oyede",
+        Ward == "Oyoko" ~	"Oyoko/Abavo I",
+        Ward == "Ozanogogo" ~	"Ozanogogo/Ihuozomor (Ozanogogo Alisimie)",
+        Ward == "Ozoro Ward 1" ~	"Ozoro 1",
+        Ward == "Ozoro Ward 2" ~	"Ozoro 2",
+        Ward == "Ozoro Ward 3" ~	"Ozoro 3",
+        Ward == "Udomi-Azuowa" ~	"Udomi-Azuowa/Abavo II",
+        Ward == "Urhuovie" ~	"Urhuovie/Abraka  II",
+        TRUE ~ Ward))
+  }
+
+  # colnames(state_itn_data)[colnames(state_itn_data) == "AdminLevel3"] <- "Ward"
+  # colnames(state_itn_data)[colnames(state_itn_data) == "Row Labels"] <- "Ward"
+  # colnames(state_itn_data)[colnames(state_itn_data) == "WardName"] <- "Ward"
+  # colnames(state_itn_data)[colnames(state_itn_data) == "N_FamilyMembers"] <- "Population"
+  # colnames(state_itn_data)[colnames(state_itn_data) == "Sum of N_Nets"] <- "Population"
+  # colnames(state_itn_data)[colnames(state_itn_data) == "Num_ITN"] <- "Population"
 
   # state_itn_data <- state_itn_data %>%
   #   dplyr::select(Population, Ward) %>%
   #   group_by(Ward) %>%
   #   summarise(Population = sum(Population, na.rm = TRUE))
 
-  # if yobe state, add LGA labels to the two Hausari wards
-  if (state_name %in% c("Yobe", "yobe")) {
-    # state_variables <- state_variables %>%
-    #   mutate(WardName = case_when(
-    #     WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
-    #     WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
-    #     TRUE ~ WardName
-    #   ))
-    ranked_wards <- ranked_wards %>%
-      mutate(WardName = case_when(
-        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
-        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
-        TRUE ~ WardName
-      ))
-    state_itn_data <- state_itn_data %>%
-      mutate(Ward = case_when(
-        Ward == "Hausari" & LGA == "Nguru" ~ "Hausari (Nguru LGA)",
-        Ward == "Hausari" & LGA == "Geidam"  ~ "Hausari (Geidam LGA)",
-        TRUE ~ Ward
-      ))
-  }
+  # # if yobe state, add LGA labels to the two Hausari wards
+  # if (state_name %in% c("Yobe", "yobe")) {
+  #   # state_variables <- state_variables %>%
+  #   #   mutate(WardName = case_when(
+  #   #     WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+  #   #     WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+  #   #     TRUE ~ WardName
+  #   #   ))
+  #   ranked_wards <- ranked_wards %>%
+  #     mutate(WardName = case_when(
+  #       WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+  #       WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+  #       TRUE ~ WardName
+  #     ))
+  #   state_itn_data <- state_itn_data %>%
+  #     mutate(Ward = case_when(
+  #       Ward == "Hausari" & LGA == "Nguru" ~ "Hausari (Nguru LGA)",
+  #       Ward == "Hausari" & LGA == "Geidam"  ~ "Hausari (Geidam LGA)",
+  #       TRUE ~ Ward
+  #     ))
+  # }
 
-  # if niger state, add LGA labels to the duplicate wards
-  if (state_name %in% c("Niger", "niger")) {
-    state_itn_data <- state_itn_data %>%
-      mutate(Ward = case_when(
-        Ward == "Magajiya" & LGA == "Suleja" ~ "Magajiya (Suleja LGA)",
-        Ward == "Magajiya" & LGA == "Kontagora"  ~ "Magajiya (Kontagora LGA)",
-        Ward == "Sabon Gari" & LGA == "Rafi" ~ "Sabon Gari (Rafi LGA)",
-        Ward == "Sabon Gari" & LGA == "Chanchaga"  ~ "Sabon Gari (Chanchaga LGA)",
-        Ward == "Sabon Gari" & LGA == "Wushishi"  ~ "Sabon Gari (Wushishi LGA)",
-        Ward == "Kodo" & LGA == "Bosso" ~ "Kodo (Bosso LGA)",
-        Ward == "Kodo" & LGA == "Wushishi"  ~ "Kodo (Wushishi LGA)",
-        Ward == "Kudu" & LGA == "Kontagora" ~ "Kudu (Kontagora LGA)",
-        Ward == "Kudu" & LGA == "Mokwa"  ~ "Kudu (Mokwa LGA)",
-        Ward == "Kawo" & LGA == "Kontagora" ~ "Kawo (Kontagora LGA)",
-        Ward == "Kawo" & LGA == "Magama"  ~ "Kawo (Magama LGA)",
-        TRUE ~ Ward
-      ))
-  }
+  # # if niger state, add LGA labels to the duplicate wards
+  # if (state_name %in% c("Niger", "niger")) {
+  #   state_itn_data <- state_itn_data %>%
+  #     mutate(Ward = case_when(
+  #       Ward == "Magajiya" & LGA == "Suleja" ~ "Magajiya (Suleja LGA)",
+  #       Ward == "Magajiya" & LGA == "Kontagora"  ~ "Magajiya (Kontagora LGA)",
+  #       Ward == "Sabon Gari" & LGA == "Rafi" ~ "Sabon Gari (Rafi LGA)",
+  #       Ward == "Sabon Gari" & LGA == "Chanchaga"  ~ "Sabon Gari (Chanchaga LGA)",
+  #       Ward == "Sabon Gari" & LGA == "Wushishi"  ~ "Sabon Gari (Wushishi LGA)",
+  #       Ward == "Kodo" & LGA == "Bosso" ~ "Kodo (Bosso LGA)",
+  #       Ward == "Kodo" & LGA == "Wushishi"  ~ "Kodo (Wushishi LGA)",
+  #       Ward == "Kudu" & LGA == "Kontagora" ~ "Kudu (Kontagora LGA)",
+  #       Ward == "Kudu" & LGA == "Mokwa"  ~ "Kudu (Mokwa LGA)",
+  #       Ward == "Kawo" & LGA == "Kontagora" ~ "Kawo (Kontagora LGA)",
+  #       Ward == "Kawo" & LGA == "Magama"  ~ "Kawo (Magama LGA)",
+  #       TRUE ~ Ward
+  #     ))
+  # }
 
-  # if kaduna state, add LGA labels to the duplicate wards
-  if (state_name %in% c("Kaduna", "kaduna")) {
-    state_itn_data <- state_itn_data %>%
-      mutate(Ward = case_when(
-        Ward == "Kaura" & LGA == "Kaura" ~ "Kaura (Kaura LGA)",
-        Ward == "Kaura" & LGA == "Zaria"  ~ "Kaura (Zaria LGA)",
-        Ward == "Tudun Wada" & LGA == "Makarfi" ~ "Tudun Wada (Makarfi LGA)",
-        Ward == "Tudun Wada" & LGA == "Zaria"  ~ "Tudun Wada (Zaria LGA)",
-        Ward == "Fada" & LGA == "Jaba" ~ "Fada (Jaba LGA)",
-        Ward == "Fada" & LGA == "Kaura"  ~ "Fada (Kaura LGA)",
-        Ward == "Kakangi" & LGA == "Birnin Gwari" ~ "Kakangi (Birnin Gwari LGA)",
-        Ward == "Kakangi" & LGA == "Giwa"  ~ "Kakangi (Giwa LGA)",
-        Ward == "Sabon Birnin" & LGA == "Igabi"  ~ "Sabon Birnin (Igabi LGA)",
-        Ward == "Zabi" & LGA == "Kubau" ~ "Zabi (Kubau LGA)",
-        Ward == "Zabi" & LGA == "Kudan"  ~ "Zabi (Kudan LGA)",
-        Ward == "Zabi" & LGA == "Sabon Gari"  ~ "Zabi (Sabon Gari LGA)",
-        TRUE ~ Ward
-      )) %>%
-    dplyr::filter(!(Ward == "Doka" & LGA == "Kachia"))
-  }
+  # # if kaduna state, add LGA labels to the duplicate wards
+  # if (state_name %in% c("Kaduna", "kaduna")) {
+  #   state_itn_data <- state_itn_data %>%
+  #     mutate(Ward = case_when(
+  #       Ward == "Kaura" & LGA == "Kaura" ~ "Kaura (Kaura LGA)",
+  #       Ward == "Kaura" & LGA == "Zaria"  ~ "Kaura (Zaria LGA)",
+  #       Ward == "Tudun Wada" & LGA == "Makarfi" ~ "Tudun Wada (Makarfi LGA)",
+  #       Ward == "Tudun Wada" & LGA == "Zaria"  ~ "Tudun Wada (Zaria LGA)",
+  #       Ward == "Fada" & LGA == "Jaba" ~ "Fada (Jaba LGA)",
+  #       Ward == "Fada" & LGA == "Kaura"  ~ "Fada (Kaura LGA)",
+  #       Ward == "Kakangi" & LGA == "Birnin Gwari" ~ "Kakangi (Birnin Gwari LGA)",
+  #       Ward == "Kakangi" & LGA == "Giwa"  ~ "Kakangi (Giwa LGA)",
+  #       Ward == "Sabon Birnin" & LGA == "Igabi"  ~ "Sabon Birnin (Igabi LGA)",
+  #       Ward == "Zabi" & LGA == "Kubau" ~ "Zabi (Kubau LGA)",
+  #       Ward == "Zabi" & LGA == "Kudan"  ~ "Zabi (Kudan LGA)",
+  #       Ward == "Zabi" & LGA == "Sabon Gari"  ~ "Zabi (Sabon Gari LGA)",
+  #       TRUE ~ Ward
+  #     )) %>%
+  #   dplyr::filter(!(Ward == "Doka" & LGA == "Kachia"))
+  # }
 
-  # if kaduna state, add LGA labels to the duplicate wards
-  if (state_name %in% c("Katsina", "katsina")) {
-    state_itn_data <- state_itn_data %>%
-      mutate(Ward = case_when(
-        Ward == "Sabon Gari" & LGA == "Daura" ~ "Sabon Gari (Daura LGA)",
-        Ward == "Sabon Gari" & LGA == "Funtua"  ~ "Sabon Gari (Funtua LGA)",
-        TRUE ~ Ward
-      ))
-  }
+  # # if katsina state, add LGA labels to the duplicate wards
+  # if (state_name %in% c("Katsina", "katsina")) {
+  #   state_itn_data <- state_itn_data %>%
+  #     mutate(Ward = case_when(
+  #       Ward == "Sabon Gari" & LGA == "Daura" ~ "Sabon Gari (Daura LGA)",
+  #       Ward == "Sabon Gari" & LGA == "Funtua"  ~ "Sabon Gari (Funtua LGA)",
+  #       TRUE ~ Ward
+  #     ))
+  # }
 
   # merge data
-  combined_wards <- left_join(state_variables, ranked_wards, by = "WardName")
-  combined_wards2 <- left_join(combined_wards, state_itn_data, by = c("WardName" = "Ward"))
+  combined_wards <- left_join(state_variables, ranked_wards, by = c("WardCode"))
+  combined_wards2 <- left_join(combined_wards, state_itn_data, by = c("WardName.x" = "Ward"))
 
   # delete any duplicate columns
   combined_wards2 <- combined_wards2[!duplicated(combined_wards2), ]
@@ -394,22 +499,22 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
   prioritized_wards <- list()
   num_reprioritized_wards <- list()
   if (20 %in% scenarios) {
-    prioritized_wards[["20"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_20", "WardName", 30)
+    prioritized_wards[["20"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_20", "WardName.x", 30)
     num_reprioritized_wards[["20"]] <- nrow(prioritized_wards[["20"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_20.csv")), x = prioritized_wards[["20"]])
   }
   if (30 %in% scenarios) {
-    prioritized_wards[["30"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_30", "WardName", 30)
+    prioritized_wards[["30"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_30", "WardName.x", 30)
     num_reprioritized_wards[["30"]] <- nrow(prioritized_wards[["30"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_30.csv")), x = prioritized_wards[["30"]])
   }
   if (50 %in% scenarios) {
-    prioritized_wards[["50"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_50", "WardName", 30)
+    prioritized_wards[["50"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_50", "WardName.x", 30)
     num_reprioritized_wards[["50"]] <- nrow(prioritized_wards[["50"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_50.csv")), x = prioritized_wards[["50"]])
   }
   if (75 %in% scenarios) {
-    prioritized_wards[["75"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_75", "WardName", 30)
+    prioritized_wards[["75"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_75", "WardName.x", 30)
     num_reprioritized_wards[["75"]] <- nrow(prioritized_wards[["75"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_75.csv")), x = prioritized_wards[["75"]])
   }
@@ -444,7 +549,7 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
 
   # create risk map using composite scores
   risk_map <- ggplot() +
-    geom_sf(data = state_shp %>% left_join(combined_wards2, by = "WardName"),
+    geom_sf(data = state_shapefile %>% left_join(combined_wards2, by = c("WardName" = "WardName.x")),
             aes(geometry = geometry, fill = rank)) +
     scale_fill_gradient(name = "Rank", low = "lightyellow", high = "red", na.value = "grey") +
     labs(title = paste("Malaria Risk Map of", state_name, "State"),
@@ -455,7 +560,7 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
   # create reprioritization maps for selected scenarios
   reprioritization_maps <- lapply(names(prioritized_wards), function(s) {
     ggplot() +
-      geom_sf(data = state_shp %>%
+      geom_sf(data = state_shapefile %>%
                 left_join(prioritized_wards[[s]], by = c("WardName" = "SelectedWards")),
               aes(geometry = geometry,
                   fill = ifelse(is.na(WardPopulation), "Not Reprioritized", "Reprioritized"))) +
@@ -485,10 +590,10 @@ create_reprioritization_map <- function(state_name, shapefile, itn_dir,
   )
 
   # save the plots in the state-specific folder
-  ggsave(filename = file.path(state_folder, paste0(Sys.Date(), "_", state_name, "_risk_map.pdf")),
+  ggsave(filename = file.path(state_folder, paste0(state_name, "_risk_map.pdf")),
          plot = risk_map, width = 12, height = 8)
 
-  ggsave(filename = file.path(state_folder, paste0(Sys.Date(), "_", state_name, "_reprioritization_maps.pdf")),
+  ggsave(filename = file.path(state_folder, paste0(state_name, "_reprioritization_maps.pdf")),
          plot = final_grid, width = 12, height = 8)
 
   return(list(risk_map = risk_map, reprioritization_map = final_grid))

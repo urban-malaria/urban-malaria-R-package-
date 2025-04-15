@@ -16,7 +16,7 @@ results <- reprioritize(
   state_name = "Yobe",
   shapefile_path = file.path(StateShpDir, "Yobe/Yobe_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/yobetpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned", "pbi_distribution_Yobe_clean.csv"),
+  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Yobe.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -36,7 +36,7 @@ results <- reprioritize(
   state_name = "Katsina",
   shapefile_path = file.path(StateShpDir, "Katsina/Katsina_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/katsinatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned", "pbi_distribution_Katsina_clean.csv"),
+  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Katsina.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -55,8 +55,8 @@ results <- reprioritize(
 results <- reprioritize(
   state_name = "Delta",
   shapefile_path = file.path(StateShpDir, "Delta/Delta_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/deltatpr.csv"),
-  itn_dir = file.path(ITNDir, "cleaned", "pbi_distribution_Delta_clean.csv"),
+  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/deltatpr_updated.csv"),
+  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Delta.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -76,7 +76,7 @@ results <- reprioritize(
   state_name = "Niger",
   shapefile_path = file.path(StateShpDir, "Niger/Niger_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/nigertpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned", "pbi_distribution_Niger_clean.csv"),
+  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Niger.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -95,8 +95,8 @@ results <- reprioritize(
 results <- reprioritize(
   state_name = "Taraba",
   shapefile_path = file.path(StateShpDir, "Taraba/Taraba_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/tarabatpr.csv"),
-  itn_dir = file.path(ITNDir, "cleaned", "pbi_distribution_Taraba_clean.csv"),
+  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/tarabatpr_updated.csv"),
+  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Taraba.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -116,7 +116,7 @@ results <- reprioritize(
   state_name = "Kaduna",
   shapefile_path = file.path(StateShpDir, "Kaduna/Kaduna_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/kadunatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned", "pbi_distribution_Kaduna_clean.csv"),
+  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Kaduna.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
