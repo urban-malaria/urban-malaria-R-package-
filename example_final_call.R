@@ -16,7 +16,7 @@ results <- reprioritize(
   state_name = "Yobe",
   shapefile_path = file.path(StateShpDir, "Yobe/Yobe_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/yobetpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Yobe.xlsx"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Yobe_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -36,7 +36,7 @@ results <- reprioritize(
   state_name = "Katsina",
   shapefile_path = file.path(StateShpDir, "Katsina/Katsina_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/katsinatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Katsina.xlsx"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Katsina_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -56,7 +56,7 @@ results <- reprioritize(
   state_name = "Delta",
   shapefile_path = file.path(StateShpDir, "Delta/Delta_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/deltatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Delta.xlsx"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Delta_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -76,7 +76,7 @@ results <- reprioritize(
   state_name = "Niger",
   shapefile_path = file.path(StateShpDir, "Niger/Niger_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/nigertpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Niger.xlsx"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Niger_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -96,7 +96,7 @@ results <- reprioritize(
   state_name = "Taraba",
   shapefile_path = file.path(StateShpDir, "Taraba/Taraba_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/tarabatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Taraba.xlsx"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Taraba_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
@@ -116,7 +116,7 @@ results <- reprioritize(
   state_name = "Kaduna",
   shapefile_path = file.path(StateShpDir, "Kaduna/Kaduna_State.shp"),
   tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/kadunatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "original full ITN datasets/pbi_distribution_Kaduna.xlsx"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Kaduna_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),

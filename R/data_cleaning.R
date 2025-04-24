@@ -5,6 +5,21 @@
 # Purpose: Cleans ward and LGA names for states that have duplicate ward names.
 # ==========================================================================================================================================
 
+## =========================================================================================================================================
+### Function to clean up dataframes after merging
+## =========================================================================================================================================
+
+clean_extracted_data <- function(df) {
+  # clean dataset before returning it
+  extracted_data_plus <- df %>%
+    dplyr::select(!matches("\\.y$")) %>%  # remove columns ending in .y (assuming .x and .y are duplicates)
+    rename_with(~ gsub("\\.x$", "", .))  # remove .x suffix from column names
+}
+
+## =========================================================================================================================================
+### Function to add LGA name to ward name in the extracted data
+## =========================================================================================================================================
+
 clean_extracted <- function(state_name, extracted_data, state_shapefile) {
 
   if (state_name %in% c("Niger", "niger")) {
@@ -85,8 +100,21 @@ clean_extracted <- function(state_name, extracted_data, state_shapefile) {
       dplyr::filter(!(WardName == "Garu" & LGACode == 19021))
   }
 
+  if (state_name %in% c("Yobe", "yobe")) {
+    extracted_data <- extracted_data %>%
+      mutate(WardName = case_when(
+        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+        TRUE ~ WardName
+      ))
+  }
+
   return(extracted_data)
 }
+
+## =========================================================================================================================================
+### Function to add the LGA name to the ward name in the shapefiles
+## =========================================================================================================================================
 
 clean_shapefile <- function(state_name, state_shapefile) {
   if (state_name %in% c("Niger", "niger")) {
@@ -165,8 +193,21 @@ clean_shapefile <- function(state_name, state_shapefile) {
       dplyr::filter(!(WardName == "Garu" & LGACode == 19021))
   }
 
+  if (state_name %in% c("Yobe", "yobe")) {
+    state_shapefile <- state_shapefile %>%
+      mutate(WardName = case_when(
+        WardName == "Hausari" & Urban == "Yes" ~ "Hausari (Nguru LGA)",
+        WardName == "Hausari" & Urban == "No"  ~ "Hausari (Geidam LGA)",
+        TRUE ~ WardName
+      ))
+  }
+
   return(state_shapefile)
 }
+
+## =========================================================================================================================================
+### Function to remove observations that merged incorrectly (this was only a problem for Katsina and Niger)
+## =========================================================================================================================================
 
 clean_extracted_plus <- function(state_name, extracted_data_plus) {
   if (state_name %in% c("Katsina", "katsina")) {
@@ -191,5 +232,95 @@ clean_extracted_plus <- function(state_name, extracted_data_plus) {
         LGA = ifelse(WardName == "Mazoji B (Matazu LGA)", "Matazu", LGA),
       )
   }
+  if (state_name %in% c("Niger", "niger")) {
+    extracted_data_plus <- extracted_data_plus %>%
+      filter(
+        !(WardName == "Magajiya (Kontagora LGA)" & LGA == "Suleja") &
+          !(WardName == "Magajiya (Suleja LGA)" & LGA == "Kontagora") &
+          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Wushishi") &
+          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Rafi") &
+          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Chanchaga") &
+          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Rafi") &
+          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Wushishi") &
+          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Chanchaga") &
+          !(WardName == "Kodo (Bosso LGA)" & LGA == "Wushishi") &
+          !(WardName == "Kodo (Wushishi LGA)" & LGA == "Bosso") &
+          !(WardName == "Kudu (Kontagora LGA)" & LGA == "Mokwa") &
+          !(WardName == "Kudu (Mokwa LGA)" & LGA == "Kontagora") &
+          !(WardName == "Kawo (Kontagora LGA)" & LGA == "Magama") &
+          !(WardName == "Kawo (Magama LGA)" & LGA == "Kontagora")
+      )
+  }
   return(extracted_data_plus)
+}
+
+## =========================================================================================================================================
+### Function to add LGA to ward name in the ITN datasets
+### My ITN cleaning script standardized the spelling/formatting of the ward names, and this code adds the LGA name to wards that appear
+### more than once. We could move this to the ITN cleaning script to simplify the package.
+## =========================================================================================================================================
+
+clean_itn_data <- function(state_name, state_itn_data) {
+
+  # if niger state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Niger", "niger")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Magajiya" & LGA == "Suleja" ~ "Magajiya (Suleja LGA)",
+        Ward == "Magajiya" & LGA == "Kontagora"  ~ "Magajiya (Kontagora LGA)",
+        Ward == "Sabon Gari" & LGA == "Rafi" ~ "Sabon Gari (Rafi LGA)",
+        Ward == "Sabon Gari" & LGA == "Chanchaga"  ~ "Sabon Gari (Chanchaga LGA)",
+        Ward == "Sabon Gari" & LGA == "Wushishi"  ~ "Sabon Gari (Wushishi LGA)",
+        Ward == "Kodo" & LGA == "Bosso" ~ "Kodo (Bosso LGA)",
+        Ward == "Kodo" & LGA == "Wushishi"  ~ "Kodo (Wushishi LGA)",
+        Ward == "Kudu" & LGA == "Kontagora" ~ "Kudu (Kontagora LGA)",
+        Ward == "Kudu" & LGA == "Mokwa"  ~ "Kudu (Mokwa LGA)",
+        Ward == "Kawo" & LGA == "Kontagora" ~ "Kawo (Kontagora LGA)",
+        Ward == "Kawo" & LGA == "Magama"  ~ "Kawo (Magama LGA)",
+        TRUE ~ Ward
+      ))
+  }
+
+  # if kaduna state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Kaduna", "kaduna")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Kaura" & LGA == "Kaura" ~ "Kaura (Kaura LGA)",
+        Ward == "Kaura" & LGA == "Zaria"  ~ "Kaura (Zaria LGA)",
+        Ward == "Tudun Wada" & LGA == "Makarfi" ~ "Tudun Wada (Makarfi LGA)",
+        Ward == "Tudun Wada" & LGA == "Zaria"  ~ "Tudun Wada (Zaria LGA)",
+        Ward == "Fada" & LGA == "Jaba" ~ "Fada (Jaba LGA)",
+        Ward == "Fada" & LGA == "Kaura"  ~ "Fada (Kaura LGA)",
+        Ward == "Kakangi" & LGA == "Birnin Gwari" ~ "Kakangi (Birnin Gwari LGA)",
+        Ward == "Kakangi" & LGA == "Giwa"  ~ "Kakangi (Giwa LGA)",
+        Ward == "Sabon Birnin" & LGA == "Igabi"  ~ "Sabon Birnin (Igabi LGA)",
+        Ward == "Zabi" & LGA == "Kubau" ~ "Zabi (Kubau LGA)",
+        Ward == "Zabi" & LGA == "Kudan"  ~ "Zabi (Kudan LGA)",
+        Ward == "Zabi" & LGA == "Sabon Gari"  ~ "Zabi (Sabon Gari LGA)",
+        TRUE ~ Ward
+      )) %>%
+      dplyr::filter(!(Ward == "Doka" & LGA == "Kachia"))
+  }
+
+  # if katsina state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Katsina", "katsina")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Sabon Gari" & LGA == "Daura" ~ "Sabon Gari (Daura LGA)",
+        Ward == "Sabon Gari" & LGA == "Funtua"  ~ "Sabon Gari (Funtua LGA)",
+        TRUE ~ Ward
+      ))
+  }
+
+  # if yobe state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Yobe", "yobe")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Hausari" & LGA == "Geidam" ~ "Hausari (Geidam LGA)",
+        Ward == "Hausari" & LGA == "Nguru"  ~ "Hausari (Nguru LGA)",
+        TRUE ~ Ward
+      ))
+  }
+
+  return(state_itn_data)
 }
