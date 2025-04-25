@@ -13,7 +13,7 @@ Installation
 To install and use NetSmartR, you can install it from GitHub using:
 
 install.packages("devtools")
-devtools::install_github("yourusername/NetSmartR")
+devtools::install_github("urban-malaria/urban-malaria-R-package-")
 
 Data Requirements
 
