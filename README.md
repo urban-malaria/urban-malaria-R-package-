@@ -1,92 +1,118 @@
-# NetSmartR
-Grace's R package compiling analyses for NMEP request.
-# NetSmartR
+⸻
+
+NetSmartR
 
 NetSmartR: Insecticide-Treated Net Reprioritization in Nigeria
 
 Overview
 
-NetSmartR is an R package designed to facilitate the reprioritization of wards in Nigerian states for malaria intervention strategies. This package integrates multiple data sources, including user-specified environmental variables, malaria test positivity rate (TPR) data, and urban percentage estimates obtained from Google Earth Engine. The package provides a structured workflow for calculating composite malaria risk scores and generating reprioritization maps.
+NetSmartR is an R package designed to support the reprioritization of wards in Nigerian states for malaria intervention planning. It streamlines the integration of multiple datasets—including environmental covariates, malaria test positivity data, ITN distribution data, and urban land cover estimates—to calculate composite malaria risk scores and generate prioritization maps.
 
 Installation
 
-To install and use NetSmartR, you can install it from GitHub using:
+Install NetSmartR from GitHub using:
 
 install.packages("devtools")
-devtools::install_github("yourusername/NetSmartR")
+devtools::install_github("urban-malaria/urban-malaria-R-package-")
 
 Data Requirements
 
-Before running NetSmartR, you need to gather the necessary datasets:
-	1.	Shapefile of the State: A shapefile containing ward boundaries for the selected Nigerian state.
-	2.	Malaria TPR Data: A CSV file containing test positivity rates for each ward.
-	3.	ITN Distribution Data: A CSV file containing information on insecticide-treated net (ITN) distributions.
-	4.	Raster Datasets: GeoTIFF files for the environmental covariates you would like to use in calculating the composite malaria risk score for each ward (e.g., distance to water, elevation).
-	5.	Urban Percentage Data: A GeoJSON file containing the percentage of urban land cover for each ward, obtained using Google Earth Engine (GEE).
+To run the analysis, you’ll need the following:
+	1.	State shapefile
+	      •	Must include WardName and WardCode columns.
+	2.	Malaria test positivity rate (TPR) data
+	      •	A .csv file with WardName and u5_tpr_rdt columns.
+	3.	ITN distribution data
+	      •	An .xlsx file with WardName and Population.
+	4.	Raster data
+	      •	.tif files of environmental covariates (e.g., rainfall, elevation, vegetation).
+	5.	Urban percentage data
+	      •	A .geojson file with ward-level urban land cover percentages.
+	6.	Settlement block data (if including settlement type in analysis)
+	      •	A shapefile (.shp) of Nigeria building footprints or blocks.
+
+⸻
 
 Getting Urban Percentage Data from Google Earth Engine
 
-Users need to retrieve urban percentage data using a Google Earth Engine script. Follow these steps:
-	1.	Open the GEE Script
-	•	Visit Google Earth Engine and sign in with your Google account.
-	•	Copy and paste the provided GEE script (GEE_script.txt) into the code editor.
-	2.	Modify the Asset Path
-	•	Update any asset paths in the script to reflect your own Google Earth Engine account.
-	•	Example modification:
+If your urban percentage .geojson file is missing, the package will prompt you to retrieve it. Here’s how:
+	1.	Open this Google Earth Engine script:
+	      🔗 https://code.earthengine.google.com/10e57f311f3cc2b81a0d247593ed4666
+	2.	Upload your state shapefile under the Assets tab.
+	3.	Edit the script:
+      	•	Replace your_username with your Earth Engine username.
+      	•	Replace your_shapefile with the name of the uploaded state shapefile:
 
-var wards = ee.FeatureCollection("users/yourusername/Wards");
+        var shapefile = ee.FeatureCollection('projects/ee_yourname/assets/Delta_State');
 
+	4.	Click Run to execute the script.
+	5.	Export the table:
+      	•	Under Tasks, click Run on the unsubmitted export task.
+      	•	Save the file as GeoJSON and rename it to include the state name (e.g., delta_urban_percentage).
+	6.	Download the file from your Google Drive and save it locally.
+	7.	Use the full path to the .geojson file as the urban_data_path.
 
-	3.	Run the Script and Export Data
-	•	Run the script to compute urban percentages for each ward.
-	•	Export the resulting data as a GeoJSON file to your Google Drive.
-	•	Example export command in GEE:
+⸻
 
-Export.table.toDrive({
-  collection: wards_with_urban_percentage,
-  description: "Urban_Percentage",
-  fileFormat: "GeoJSON"
-});
+Getting Settlement Block Data
 
+If you choose to include settlement type in the composite score calculation and the settlement block shapefile is missing, follow these steps:
+	1.	Download the zipped shapefile from this Google Drive folder:
+	      🔗 https://drive.google.com/drive/folders/1afjdVOASmx_AspHONK1Pp-IwiY5UfkIJ?usp=sharing
+	2.	Save the .zip file locally.
+	3.	Unzip the file.
+	4.	Locate the .shp file (e.g., Nigeria_Blocks_V1.shp).
+	5.	Provide the full file path to the shapefile (not the zip) in the settlement_block_path argument.
+	6.	Rerun the function after saving and unzipping.
 
-	4.	Download the GeoJSON File
-	•	Navigate to your Google Drive, locate the exported file, and download it to your local machine.
-	5.	Read the GeoJSON File into R
-	•	Use the following R code to load the urban percentage data:
-
-library(sf)
-urban_data <- st_read("path/to/Urban_Percentage.geojson")
-
-
+⸻
 
 Running the Reprioritization Analysis
 
-Once all required datasets are available, run the main function:
-
-library(NetSmartR)
+Once all inputs are ready, use the function below with your state name and file paths:
 
 results <- reprioritize(
-  state_name = "Kano",
-  shapefile_path = "path/to/Kano_State.shp",
-  tpr_data_path = "path/to/Kano_TPR.csv",
-  output_dir = "path/to/output",
-  itn_dir = "path/to/ITN_distribution_Kano.csv",
+  state_name = "Niger",
+  shapefile_path = file.path(StateShpDir, "Niger/Niger_State.shp"),
+  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/nigertpr_updated.csv"),
+  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Niger_clean.xlsx"),
   raster_paths = list(
-    h2o_distance_path = "path/to/distance_to_water.tif",
-    elevation_path = "path/to/Elevation.tif"
+    h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
+    evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
+    flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
+    output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  risk_factors = c("distance_to_water", "settlement_type", "urban_percentage", "u5_tpr_rdt”),
-  urban_data_path = file.path(”file/path”)
+  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/niger_urban_percentage.geojson"),
+  settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
+  map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
+  include_settlement_type = "Yes",
+  include_u5_tpr_data = "Yes",
+  scenarios = c(20, 30, 50, 75)
 )
+
+
+
+⸻
 
 Output
 
-The package generates:
-	•	A composite malaria risk score dataset for each ward.
-	•	Ranked ward prioritization tables for intervention planning.
-	•	Malaria risk maps showing the wards ranked by composite malaria risk score.
-	•	Reprioritization maps showing spatial distributions of malaria risk.
+Running reprioritize() will produce:
+	•	✅ Composite malaria risk scores for all wards
+	•	📊 Ranked prioritization tables
+	•	🗺️ Malaria risk map
+	•	📍 Reprioritization maps for selected urban thresholds (e.g., 20%, 30%, 50%, 75%)
+
+⸻
+
+Notes
+	•	Replace file paths with your own directory structure.
+	•	You can toggle whether to include settlement type or under-5 TPR data.
+	•	Urban threshold options may be any or all of: 20, 30, 50, 75.
+
+⸻
 
 License
 
-This package is licensed under the MIT License.
+This package is released under the MIT License.
+
+⸻
