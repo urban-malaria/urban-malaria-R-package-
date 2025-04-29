@@ -307,7 +307,26 @@ clean_itn_data <- function(state_name, state_itn_data) {
     state_itn_data <- state_itn_data %>%
       mutate(Ward = case_when(
         Ward == "Sabon Gari" & LGA == "Daura" ~ "Sabon Gari (Daura LGA)",
-        Ward == "Sabon Gari" & LGA == "Funtua"  ~ "Sabon Gari (Funtua LGA)",
+        Ward == "Sabon Gari" & LGA == "Funtua" ~ "Sabon Gari (Funtua LGA)",
+        Ward == "Kandawa" & LGA == "Batsari" ~ "Kandawa (Batsari LGA)",
+        Ward == "Kandawa" & LGA == "Ingawa" ~ "Kandawa (Ingawa LGA)",
+        Ward == "Baure" & LGA == "Baure" ~ "Baure (Baure LGA)",
+        Ward == "Baure" & LGA == "Bindawa" ~ "Baure (Bindawa LGA)",
+        Ward == "Safana" & LGA == "Charanchi" ~ "Safana (Charanchi LGA)",
+        Ward == "Safana" & LGA == "Safana" ~ "Safana (Safana LGA)",
+        Ward == "Mazoji A" & LGA == "Daura" ~ "Mazoji A (Daura LGA)",
+        Ward == "Mazoji B" & LGA == "Daura" ~ "Mazoji B (Daura LGA)",
+        Ward == "Mazoji A" & LGA == "Matazu" ~ "Mazoji A (Matazu LGA)",
+        Ward == "Mazoji B" & LGA == "Matazu" ~ "Mazoji B (Matazu LGA)",
+        Ward == "Makera" & LGA == "Dutsin Ma" ~ "Makera (Dutsin-Ma LGA)",
+        Ward == "Makera" & LGA == "Funtua" ~ "Makera (Funtua LGA)",
+        Ward == "Gurbi" & LGA == "Jibia" ~ "Gurbi (Jibia LGA)",
+        Ward == "Gurbi" & LGA == "Kankara" ~ "Gurbi (Kankara LGA)",
+        Ward == "Zango" & LGA == "Kankara" ~ "Zango (Kankara LGA)",
+        Ward == "Zango" & LGA == "Zango" ~ "Zango (Zango LGA)",
+        Ward == "Machika" & LGA == "Mani" ~ "Machika (Mani LGA)",
+        Ward == "Machika" & LGA == "Sabuwa" ~ "Machika (Sabuwa LGA)",
+        Ward == "Sabon Gari" & LGA == "Rimi" ~ "Sabon Gari (Rimi LGA)",
         TRUE ~ Ward
       ))
   }
@@ -318,6 +337,16 @@ clean_itn_data <- function(state_name, state_itn_data) {
       mutate(Ward = case_when(
         Ward == "Hausari" & LGA == "Geidam" ~ "Hausari (Geidam LGA)",
         Ward == "Hausari" & LGA == "Nguru"  ~ "Hausari (Nguru LGA)",
+        TRUE ~ Ward
+      ))
+  }
+
+  # if taraba state, add LGA labels to the duplicate wards
+  if (state_name %in% c("Taraba", "taraba")) {
+    state_itn_data <- state_itn_data %>%
+      mutate(Ward = case_when(
+        Ward == "Suntai" & LGA == "Bali" ~ "Suntai (Bali LGA)",
+        Ward == "Suntai" & LGA == "Donga"  ~ "Suntai (Donga LGA)",
         TRUE ~ Ward
       ))
   }
