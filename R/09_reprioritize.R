@@ -63,6 +63,13 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
   ward_percentages <- c()
   WardCode_x <- c()
 
+  # print the wards that will be filtered out
+  filtered_out <- data[is.na(data[[population_col]]) | is.na(data[[rank_col]]), ]
+  if (nrow(filtered_out) > 0) {
+    message("Filtered out the following wards in scenario ", class_col, " due to missing population or rank:")
+    print(filtered_out[[ward_col]])
+  }
+
   # filter out rows with missing population or rank values
   data_sorted <- data[!is.na(data[[population_col]]) & !is.na(data[[rank_col]]), ]
   data_sorted <- data_sorted[order(data_sorted[[rank_col]]), ]
