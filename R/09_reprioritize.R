@@ -54,7 +54,7 @@
 #' }
 #'
 #' @export
-prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col, target_percentage = 30) {
+prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col, lga_col, target_percentage = 30) {
   total_population <- sum(data[[population_col]], na.rm = TRUE)
 
   selected_wards <- c()
@@ -83,6 +83,7 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
     }
 
     selected_wards <- c(selected_wards, ward[[ward_col]])
+    lga_name <- ward[[lga_col]]
     ward_population <- ward[[population_col]]
     cumulative_population <- cumulative_population + ward_population
     current_percentage <- (ward_population / total_population) * 100
@@ -100,6 +101,7 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
   # create a result dataframe
   result <- data.frame(
     SelectedWards = selected_wards,
+    LGA = lga_name,
     WardCode = WardCode_x,
     WardPopulation = ward_populations,
     WardPercentage = ward_percentages,
@@ -136,11 +138,8 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
 #' @export
 tpr_merge <- function(tpr_data_path, extracted_data, state_name) {
   tpr_data <- read.csv(tpr_data_path)
-  # yobe has an extra entry for Hausari ward
-  if(state_name %in% c("Yobe", "yobe")) {
-    tpr_data <- tpr_data %>% dplyr::filter(X != 131)
-  }
-
+  extracted_data <- extracted_data %>% mutate(WardCode = as.character(WardCode))
+  tpr_data <- tpr_data %>% mutate(WardCode = as.character(WardCode))
   extracted_data_plus <- extracted_data %>%
     left_join(tpr_data %>% dplyr::select(WardCode, WardName, LGA, u5_tpr_rdt), by = "WardCode")
 }
@@ -404,22 +403,22 @@ create_reprioritization_map <- function(state_name, state_shapefile, itn_dir,
   prioritized_wards <- list()
   num_reprioritized_wards <- list()
   if (20 %in% scenarios) {
-    prioritized_wards[["20"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_20", "WardName.x", 30)
+    prioritized_wards[["20"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_20", "WardName.x", "LGA", 30)
     num_reprioritized_wards[["20"]] <- nrow(prioritized_wards[["20"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_20.csv")), x = prioritized_wards[["20"]])
   }
   if (30 %in% scenarios) {
-    prioritized_wards[["30"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_30", "WardName.x", 30)
+    prioritized_wards[["30"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_30", "WardName.x", "LGA", 30)
     num_reprioritized_wards[["30"]] <- nrow(prioritized_wards[["30"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_30.csv")), x = prioritized_wards[["30"]])
   }
   if (50 %in% scenarios) {
-    prioritized_wards[["50"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_50", "WardName.x", 30)
+    prioritized_wards[["50"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_50", "WardName.x", "LGA", 30)
     num_reprioritized_wards[["50"]] <- nrow(prioritized_wards[["50"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_50.csv")), x = prioritized_wards[["50"]])
   }
   if (75 %in% scenarios) {
-    prioritized_wards[["75"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_75", "WardName.x", 30)
+    prioritized_wards[["75"]] <- prioritize_wards(combined_wards2, "Population", "rank", "classification_75", "WardName.x", "LGA", 30)
     num_reprioritized_wards[["75"]] <- nrow(prioritized_wards[["75"]])
     write.csv(file = file.path(state_folder, paste0(state_name, "_prioritized_75.csv")), x = prioritized_wards[["75"]])
   }

@@ -8,22 +8,25 @@ DataDir <- file.path(DriveDir, "data")
 StateShpDir <- file.path(DriveDir, "data/nigeria/nigeria_shapefiles/shapefiles/ShinyApp_shapefiles/all_reprioritization_nmep_states/STATES")
 ITNDir <- file.path(DataDir, "nigeria/ITN_distribution")
 RastersDir <- file.path(DriveDir, "data/nigeria/Raster_files")
+YusufShpDir <- file.path(DriveDir, "data/nigeria/NMEP_nigeria_shapefiles/states")
+
+PackageDataDir <- file.path(DriveDir, "data/nigeria/R_package_data")
 
 # final function call for each state:
 
-# YOBE
+# YOBE - use Yusuf's cleaned shapefile
 results <- reprioritize(
   state_name = "Yobe",
-  shapefile_path = file.path(StateShpDir, "Yobe/Yobe_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/yobetpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Yobe_clean.xlsx"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles/Yobe/Yobe.shp"),
+  tpr_data_path = file.path(PackageDataDir, "TPR/yobetpr_updated.csv"),
+  itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Yobe_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
     flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/yobe_urban_percentage.geojson"),
+  urban_data_path = file.path(PackageDataDir, "urban_percentage/yobe_urban_percentage.geojson"),
   settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
   include_settlement_type = "Yes",
@@ -34,16 +37,16 @@ results <- reprioritize(
 # KATSINA
 results <- reprioritize(
   state_name = "Katsina",
-  shapefile_path = file.path(StateShpDir, "Katsina/Katsina_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/katsinatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Katsina_clean.xlsx"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles/Katsina/Katsina.shp"),
+  tpr_data_path = file.path(PackageDataDir, "TPR/katsinatpr_updated.csv"),
+  itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Katsina_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
     flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/katsina_urban_percentage.geojson"),
+  urban_data_path = file.path(PackageDataDir, "urban_percentage/katsina_urban_percentage.geojson"),
   settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
   include_settlement_type = "Yes",
@@ -54,16 +57,16 @@ results <- reprioritize(
 # DELTA
 results <- reprioritize(
   state_name = "Delta",
-  shapefile_path = file.path(StateShpDir, "Delta/Delta_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/deltatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Delta_clean.xlsx"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles/Delta/Delta.shp"),
+  tpr_data_path = file.path(PackageDataDir, "TPR/deltatpr_updated.csv"),
+  itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Delta_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
     flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/delta_urban_percentage.geojson"),
+  urban_data_path = file.path(PackageDataDir, "urban_percentage/delta_urban_percentage.geojson"),
   settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
   include_settlement_type = "Yes",
@@ -74,16 +77,16 @@ results <- reprioritize(
 # NIGER
 results <- reprioritize(
   state_name = "Niger",
-  shapefile_path = file.path(StateShpDir, "Niger/Niger_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/nigertpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Niger_clean.xlsx"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles/Niger/Niger.shp"),
+  tpr_data_path = file.path(PackageDataDir, "TPR/nigertpr_updated.csv"),
+  itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Niger_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
     flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/niger_urban_percentage.geojson"),
+  urban_data_path = file.path(PackageDataDir, "urban_percentage/niger_urban_percentage.geojson"),
   settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
   include_settlement_type = "Yes",
@@ -91,19 +94,19 @@ results <- reprioritize(
   scenarios = c(20, 30, 50, 75)
 )
 
-# TARABA
+# TARABA - use Yusuf's cleaned shapefile
 results <- reprioritize(
   state_name = "Taraba",
-  shapefile_path = file.path(StateShpDir, "Taraba/Taraba_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/tarabatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Taraba_clean.xlsx"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles/Taraba/Taraba.shp"),
+  tpr_data_path = file.path(PackageDataDir, "TPR/tarabatpr_updated.csv"),
+  itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Taraba_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
     flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/taraba_urban_percentage.geojson"),
+  urban_data_path = file.path(PackageDataDir, "urban_percentage/taraba_urban_percentage.geojson"),
   settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
   include_settlement_type = "Yes",
@@ -114,16 +117,16 @@ results <- reprioritize(
 # KADUNA
 results <- reprioritize(
   state_name = "Kaduna",
-  shapefile_path = file.path(StateShpDir, "Kaduna/Kaduna_State.shp"),
-  tpr_data_path = file.path(DataDir, "nigeria/nigeria_hmis/TPR data for selected NMEP prioritized states/kadunatpr_updated.csv"),
-  itn_dir = file.path(ITNDir, "cleaned/pbi_distribution_Kaduna_clean.xlsx"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles/Kaduna/Kaduna.shp"),
+  tpr_data_path = file.path(PackageDataDir, "TPR/kadunatpr_updated.csv"),
+  itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Kaduna_clean.xlsx"),
   raster_paths = list(
     h2o_distance_path = file.path(RastersDir, "distance_to_water_bodies/distance_to_water.tif"),
     evi_path = file.path(RastersDir, "Updated_Covariates", "2023-24_EVI_MOD13A1"),
     flood_path = file.path(RastersDir, "Flooding", "flooding_2023"),
     output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/extractions")
   ),
-  urban_data_path = file.path(DataDir, "nigeria/urban_percentage/kaduna_urban_percentage.geojson"),
+  urban_data_path = file.path(PackageDataDir, "urban_percentage/kaduna_urban_percentage.geojson"),
   settlement_block_path = file.path(DataDir, "nigeria/building_footprints/nigeria_footprints/nigeria blocks/Nigeria_Blocks_V1.shp"),
   map_output_dir = file.path(DriveDir, "projects/urban_microstratification/NetSmartR/outputs"),
   include_settlement_type = "Yes",
