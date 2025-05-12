@@ -62,6 +62,7 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
   ward_populations <- c()
   ward_percentages <- c()
   WardCode_x <- c()
+  lga_names <- c()
 
   # print the wards that will be filtered out
   filtered_out <- data[is.na(data[[population_col]]) | is.na(data[[rank_col]]), ]
@@ -83,7 +84,7 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
     }
 
     selected_wards <- c(selected_wards, ward[[ward_col]])
-    lga_name <- ward[[lga_col]]
+    lga_names <- c(lga_names, ward[[lga_col]])
     ward_population <- ward[[population_col]]
     cumulative_population <- cumulative_population + ward_population
     current_percentage <- (ward_population / total_population) * 100
@@ -101,13 +102,25 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
   # create a result dataframe
   result <- data.frame(
     SelectedWards = selected_wards,
-    LGA = lga_name,
+    LGA = lga_names,
     WardCode = WardCode_x,
     WardPopulation = ward_populations,
     WardPercentage = ward_percentages,
     CumulativePopulation = cumsum(ward_populations),
     CumulativePercentage = round(cumsum(ward_populations) / total_population * 100, 2)
   )
+
+  # rename var names for printed table
+  result <- result %>%
+    rename(
+      "Selected Wards" = SelectedWards,
+      "LGA Name" = LGA,
+      "Ward Code" = WardCode,
+      "Ward Population" = WardPopulation,
+      "Ward % of Total" = WardPercentage,
+      "Cumulative Population" = CumulativePopulation,
+      "Cumulative %" = CumulativePercentage
+    )
 
   return(result)
 }
@@ -467,9 +480,9 @@ create_reprioritization_map <- function(state_name, state_shapefile, itn_dir,
   reprioritization_maps <- lapply(names(prioritized_wards), function(s) {
     ggplot() +
       geom_sf(data = state_shapefile %>%
-                left_join(prioritized_wards[[s]], by = c("WardName" = "SelectedWards")),
+                left_join(prioritized_wards[[s]], by = c("WardName" = "Selected Wards")),
               aes(geometry = geometry,
-                  fill = ifelse(is.na(WardPopulation), "Not Reprioritized", "Reprioritized"))) +
+                  fill = ifelse(is.na(`Ward Population`), "Not Reprioritized", "Reprioritized"))) +
       scale_fill_manual(values = c("Not Reprioritized" = "#F1F2F2",
                                    "Reprioritized" = "#00AEEF"),
                         name = "Status") +
