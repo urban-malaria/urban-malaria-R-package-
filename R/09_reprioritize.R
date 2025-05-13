@@ -110,18 +110,6 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
     CumulativePercentage = round(cumsum(ward_populations) / total_population * 100, 2)
   )
 
-  # rename var names for printed table
-  result <- result %>%
-    rename(
-      "Selected Wards" = SelectedWards,
-      "LGA Name" = LGA,
-      "Ward Code" = WardCode,
-      "Ward Population" = WardPopulation,
-      "Ward % of Total" = WardPercentage,
-      "Cumulative Population" = CumulativePopulation,
-      "Cumulative %" = CumulativePercentage
-    )
-
   return(result)
 }
 
@@ -480,9 +468,9 @@ create_reprioritization_map <- function(state_name, state_shapefile, itn_dir,
   reprioritization_maps <- lapply(names(prioritized_wards), function(s) {
     ggplot() +
       geom_sf(data = state_shapefile %>%
-                left_join(prioritized_wards[[s]], by = c("WardName" = "Selected Wards")),
+                left_join(prioritized_wards[[s]], by = c("WardName" = "SelectedWards")),
               aes(geometry = geometry,
-                  fill = ifelse(is.na(`Ward Population`), "Not Reprioritized", "Reprioritized"))) +
+                  fill = ifelse(is.na(WardPopulation), "Not Reprioritized", "Reprioritized"))) +
       scale_fill_manual(values = c("Not Reprioritized" = "#F1F2F2",
                                    "Reprioritized" = "#00AEEF"),
                         name = "Status") +

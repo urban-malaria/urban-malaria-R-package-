@@ -14,10 +14,10 @@ PackageDataDir <- file.path(DriveDir, "data/nigeria/R_package_data")
 
 # final function call for each state:
 
-# YOBE - use Yusuf's cleaned shapefile
+# YOBE
 results <- reprioritize(
   state_name = "Yobe",
-  shapefile_path = file.path(PackageDataDir, "shapefiles/Yobe/Yobe.shp"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles"),
   tpr_data_path = file.path(PackageDataDir, "TPR/yobetpr_updated.csv"),
   itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Yobe_clean.xlsx"),
   raster_paths = list(
@@ -37,7 +37,7 @@ results <- reprioritize(
 # KATSINA
 results <- reprioritize(
   state_name = "Katsina",
-  shapefile_path = file.path(PackageDataDir, "shapefiles/Katsina/Katsina.shp"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles"),
   tpr_data_path = file.path(PackageDataDir, "TPR/katsinatpr_updated.csv"),
   itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Katsina_clean.xlsx"),
   raster_paths = list(
@@ -57,7 +57,7 @@ results <- reprioritize(
 # DELTA
 results <- reprioritize(
   state_name = "Delta",
-  shapefile_path = file.path(PackageDataDir, "shapefiles/Delta/Delta.shp"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles"),
   tpr_data_path = file.path(PackageDataDir, "TPR/deltatpr_updated.csv"),
   itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Delta_clean.xlsx"),
   raster_paths = list(
@@ -77,7 +77,7 @@ results <- reprioritize(
 # NIGER
 results <- reprioritize(
   state_name = "Niger",
-  shapefile_path = file.path(PackageDataDir, "shapefiles/Niger/Niger.shp"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles"),
   tpr_data_path = file.path(PackageDataDir, "TPR/nigertpr_updated.csv"),
   itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Niger_clean.xlsx"),
   raster_paths = list(
@@ -94,10 +94,10 @@ results <- reprioritize(
   scenarios = c(20, 30, 50, 75)
 )
 
-# TARABA - use Yusuf's cleaned shapefile
+# TARABA
 results <- reprioritize(
   state_name = "Taraba",
-  shapefile_path = file.path(PackageDataDir, "shapefiles/Taraba/Taraba.shp"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles"),
   tpr_data_path = file.path(PackageDataDir, "TPR/tarabatpr_updated.csv"),
   itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Taraba_clean.xlsx"),
   raster_paths = list(
@@ -117,7 +117,7 @@ results <- reprioritize(
 # KADUNA
 results <- reprioritize(
   state_name = "Kaduna",
-  shapefile_path = file.path(PackageDataDir, "shapefiles/Kaduna/Kaduna.shp"),
+  shapefile_path = file.path(PackageDataDir, "shapefiles"),
   tpr_data_path = file.path(PackageDataDir, "TPR/kadunatpr_updated.csv"),
   itn_dir = file.path(PackageDataDir, "ITN/pbi_distribution_Kaduna_clean.xlsx"),
   raster_paths = list(

@@ -16,11 +16,15 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
                          raster_paths, urban_data_path, settlement_block_path, map_output_dir,
                          include_settlement_type, include_u5_tpr_data, scenarios) {
 
-  # read in shapefile once
+  # read in shapefile
   message("Reading in shapefile...")
   state_shapefile <- tryCatch({
-      sf::st_make_valid(st_read(shapefile_path))
-  }, error = function(e) stop("Failed to load shapefile: ", e$message))
+    shapefile_file <- file.path(shapefile_path, state_name, paste0(state_name, ".shp"))
+    shapefile <- sf::st_read(shapefile_file, quiet = TRUE)
+    sf::st_make_valid(shapefile)
+  }, error = function(e) {
+    stop("Failed to load shapefile: ", e$message)
+  })
 
   message("Extracting raster data...")
   extracted_data <- extract_raster_data(state_name, state_shapefile, raster_paths)
@@ -79,5 +83,9 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
                                       map_output_dir, include_settlement_type, include_u5_tpr_data, scenarios)
 
   message("Reprioritization process for ", state_name, " completed.")
+
+  # create labeled reprioritization maps with orange LGA labels
+  lga_maps <- create_state_reprioritization_maps(state_name, state_shapefile, shapefile_path, scenarios, map_output_dir)
+
   return(maps)
 }
