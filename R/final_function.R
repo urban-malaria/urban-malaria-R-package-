@@ -69,6 +69,14 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   # remove any columns that are exactly duplicated
   extracted_data_plus <- extracted_data_plus[!duplicated(extracted_data_plus), ]
 
+  # save complete extracted data
+  message("Saving completed extracted data...")
+  output_dir <- raster_paths$output_dir
+  # remove the geometry column before writing to CSV
+  extracted_data_plus_no_geom <- extracted_data_plus
+  extracted_data_plus_no_geom$geometry <- NULL
+  write.csv(extracted_data_plus_no_geom, file = file.path(output_dir, paste0(state_name, "_extracted_data_plus.csv")), row.names = FALSE)
+
   # calculate composite scores
   message("Calculating composite malaria risk scores...")
   malaria_risk_scores <- calculate_malaria_risk_scores(extracted_data_plus, raster_paths, include_settlement_type, include_u5_tpr_data)

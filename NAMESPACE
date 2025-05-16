@@ -2,7 +2,7 @@ exportPattern("^[[:alpha:]]+")
 
 importFrom(ggplot2, ggplot, aes, geom_point, geom_line, scale_fill_manual, geom_sf, scale_fill_gradient, labs, theme, element_text, ggsave, guide_legend, element_blank)
 importFrom(dplyr, "%>%", left_join, select, arrange, row_number, distinct, rename_with, n, c_across, case_when, ungroup, rename)
-importFrom(sf, st_read, st_transform, st_union, st_as_sf, st_crs, st_join, sf_use_s2)
+importFrom(sf, st_read, st_transform, st_union, st_as_sf, st_crs, st_join, sf_use_s2, st_centroid, st_coordinates, st_make_valid, st_drop_geometry)
 importFrom(dplyr, filter, mutate, select, group_by, summarise)
 importFrom(ggrepel, geom_text_repel)
 importFrom(googledrive, drive_download, drive_find)
