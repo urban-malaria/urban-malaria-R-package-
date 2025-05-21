@@ -154,7 +154,7 @@ results <- reprioritize(
   scenarios = c(20, 30, 50, 75)
 )
 
-oplol# KWARA
+# KWARA
 results <- reprioritize(
   state_name = "Kwara",
   shapefile_path = file.path(PackageDataDir, "shapefiles"),

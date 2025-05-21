@@ -38,8 +38,8 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   extracted_data <- clean_extracted_data(extracted_data)
 
   # add LGA name to wards that have duplicate names
-  extracted_data <- clean_extracted(state_name, extracted_data)
-  state_shapefile <- clean_shapefile(state_name, state_shapefile)
+  #extracted_data <- clean_extracted(state_name, extracted_data)
+  #state_shapefile <- clean_shapefile(state_name, state_shapefile)
 
   # merge the extracted data with the TPR data
   if(include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
