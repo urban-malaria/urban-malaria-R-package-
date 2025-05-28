@@ -35,11 +35,7 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   # merge the extracted data with the urban percentage data, then clean up the column names
   message("Merging extracted data with urban percentage data...")
   extracted_data <- base::merge(extracted_data, urban_data, by = "WardCode", all.x = TRUE)
-  extracted_data <- clean_extracted_data(extracted_data)
-
-  # add LGA name to wards that have duplicate names
-  #extracted_data <- clean_extracted(state_name, extracted_data)
-  #state_shapefile <- clean_shapefile(state_name, state_shapefile)
+  extracted_data <- clean_merge(extracted_data)
 
   # merge the extracted data with the TPR data
   if(include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
@@ -52,7 +48,7 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
       extracted_data = extracted_data,
       state_name = state_name
     )
-    extracted_data_plus <- clean_extracted_data(extracted_data_plus)
+    extracted_data_plus <- clean_merge(extracted_data_plus)
   }
 
   # remove any observations that merged incorrectly
@@ -63,7 +59,7 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
     message("Getting settlement blocks data...")
     settlement_block_shp <- get_settlement_blocks(settlement_block_path)
     extracted_data_plus <- settlement_type_merge(settlement_block_shp, extracted_data_plus, state_name)
-    extracted_data_plus <- clean_extracted_data(extracted_data_plus)
+    extracted_data_plus <- clean_merge(extracted_data_plus)
   }
 
   # remove any columns that are exactly duplicated
