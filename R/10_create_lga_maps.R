@@ -112,8 +112,8 @@ create_state_reprioritization_maps <- function(state_name, state_shapefile, shap
     # remove unnecessary columns
     labels_20 <- labels_20 %>%
       select(
-        StateCode, WardCode, WardName, LGACode, Urban, Source, Timestamp, GlobalID,
-        AMAPCODE, LGA.x, SelectedWards, WardPopulation, WardPercentage,
+        StateCode, WardCode, WardName, LGACode, Source, GlobalID,
+        LGA.x, SelectedWards, WardPopulation, WardPercentage,
         CumulativePopulation, CumulativePercentage, status, coords, State, geometry
       )
     # remove exact duplicate rows
@@ -158,8 +158,8 @@ create_state_reprioritization_maps <- function(state_name, state_shapefile, shap
     # remove unnecessary columns
     labels_30 <- labels_30 %>%
       select(
-        StateCode, WardCode, WardName, LGACode, Urban, Source, Timestamp, GlobalID,
-        AMAPCODE, LGA.x, SelectedWards, WardPopulation, WardPercentage,
+        StateCode, WardCode, WardName, LGACode, Source, GlobalID,
+        LGA.x, SelectedWards, WardPopulation, WardPercentage,
         CumulativePopulation, CumulativePercentage, status, coords, State, geometry
       )
     # remove exact duplicate rows
@@ -204,8 +204,8 @@ create_state_reprioritization_maps <- function(state_name, state_shapefile, shap
     # remove unnecessary columns
     labels_50 <- labels_50 %>%
       select(
-        StateCode, WardCode, WardName, LGACode, Urban, Source, Timestamp, GlobalID,
-        AMAPCODE, LGA.x, SelectedWards, WardPopulation, WardPercentage,
+        StateCode, WardCode, WardName, LGACode, Source, GlobalID,
+        LGA.x, SelectedWards, WardPopulation, WardPercentage,
         CumulativePopulation, CumulativePercentage, status, coords, State, geometry
       )
     # remove exact duplicate rows
@@ -250,8 +250,8 @@ create_state_reprioritization_maps <- function(state_name, state_shapefile, shap
     # remove unnecessary columns
     labels_75 <- labels_75 %>%
       select(
-        StateCode, WardCode, WardName, LGACode, Urban, Source, Timestamp, GlobalID,
-        AMAPCODE, LGA.x, SelectedWards, WardPopulation, WardPercentage,
+        StateCode, WardCode, WardName, LGACode, Source, GlobalID,
+        LGA.x, SelectedWards, WardPopulation, WardPercentage,
         CumulativePopulation, CumulativePercentage, status, coords, State, geometry
       )
     # remove exact duplicate rows

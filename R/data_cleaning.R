@@ -20,61 +20,27 @@ clean_merge <- function(df) {
 ### Function to remove observations that merged incorrectly (this was only a problem for Katsina and Niger)
 ## =========================================================================================================================================
 
-clean_extracted_plus <- function(state_name, extracted_data_plus) {
-  if (state_name %in% c("Katsina", "katsina")) {
-    extracted_data_plus <- extracted_data_plus %>%
-      filter(
-        !(WardName == "Sabon Gari (Funtua LGA)" & LGA == "Rimi") &
-          !(WardName == "Sabon Gari (Rimi LGA)" & LGA == "Funtua") &
-          !(WardName == "Safana (Charanchi LGA)" & LGA == "Safana") &
-          !(WardName == "Safana (Safana LGA)" & LGA == "Charanchi") &
-          !(WardName == "Zango (Kankara LGA)" & LGA == "Zango") &
-          !(WardName == "Zango (Zango LGA)" & LGA == "Kankara")
-      ) %>%
-      mutate(
-        LGA = ifelse(WardName == "Sabon Gari (Daura LGA)", "Daura", LGA),
-        LGA = ifelse(WardName == "Baure (Baure LGA)", "Baure", LGA),
-        LGA = ifelse(WardName == "Gurbi (Jibia LGA)", "Jibia", LGA),
-        LGA = ifelse(WardName == "Kandawa (Ingawa LGA)", "Ingawa", LGA),
-        LGA = ifelse(WardName == "Machika (Mani LGA)", "Mani", LGA),
-        LGA = ifelse(WardName == "Makera (Funtua LGA)", "Funtua", LGA),
-        LGA = ifelse(WardName == "Mazoji A (Matazu LGA)", "Matazu", LGA),
-        LGA = ifelse(WardName == "Mazoji B (Daura LGA)", "Daura", LGA),
-        LGA = ifelse(WardName == "Mazoji B (Matazu LGA)", "Matazu", LGA),
-      )
+add_urban_var <- function(urban_data) {
+
+  if (!"Urban" %in% colnames(urban_data)) {
+    urban_data$Urban <- ifelse(urban_data$urbanPercentage > 30, "Yes", "No")
   }
-  if (state_name %in% c("Niger", "niger")) {
-    extracted_data_plus <- extracted_data_plus %>%
-      filter(
-        !(WardName == "Magajiya (Kontagora LGA)" & LGA == "Suleja") &
-          !(WardName == "Magajiya (Suleja LGA)" & LGA == "Kontagora") &
-          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Wushishi") &
-          !(WardName == "Sabon Gari (Chanchaga LGA)" & LGA == "Rafi") &
-          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Chanchaga") &
-          !(WardName == "Sabon Gari (Wushishi LGA)" & LGA == "Rafi") &
-          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Wushishi") &
-          !(WardName == "Sabon Gari (Rafi LGA)" & LGA == "Chanchaga") &
-          !(WardName == "Kodo (Bosso LGA)" & LGA == "Wushishi") &
-          !(WardName == "Kodo (Wushishi LGA)" & LGA == "Bosso") &
-          !(WardName == "Kudu (Kontagora LGA)" & LGA == "Mokwa") &
-          !(WardName == "Kudu (Mokwa LGA)" & LGA == "Kontagora") &
-          !(WardName == "Kawo (Kontagora LGA)" & LGA == "Magama") &
-          !(WardName == "Kawo (Magama LGA)" & LGA == "Kontagora")
-      )
-  }
-  return(extracted_data_plus)
+
+  return(urban_data)
+
 }
 
 clean_extracted_plus <- function(extracted_data_plus) {
-  extracted_data_plus %>%
+  extracted_data_plus <- extracted_data_plus %>%
     mutate(
-      # extract the LGA name in parentheses from WardName
-      lga_in_ward = str_match(WardName, "\\(([^\\)]+)\\)")[,2],
-      # normalize for consistent comparison
-      lga_in_ward_clean = str_to_lower(str_trim(lga_in_ward)),
-      lga_col_clean = str_to_lower(str_trim(LGA))
+      lga_in_ward = stringr::str_match(WardName, "\\(([^\\)]+) LGA\\)")[,2]
     ) %>%
-    # filter out rows where LGA in parentheses exists and doesn't match actual LGA
+    mutate(
+      lga_in_ward_clean = stringr::str_to_lower(stringr::str_trim(lga_in_ward)),
+      lga_col_clean = stringr::str_to_lower(stringr::str_trim(LGAName))
+    ) %>%
     filter(is.na(lga_in_ward_clean) | lga_in_ward_clean == lga_col_clean) %>%
     select(-lga_in_ward, -lga_in_ward_clean, -lga_col_clean)
+
+  return(extracted_data_plus)
 }
