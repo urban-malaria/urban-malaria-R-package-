@@ -12,7 +12,7 @@
 #' @param risk_factors Vector of covariate names to use in risk score calculation
 #' @export
 
-reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
+reprioritize <- function(state_name, shapefile_path, tpr_data_path, tpr_data_col_name, itn_dir,
                          raster_paths, urban_data_path, settlement_block_path, map_output_dir,
                          include_settlement_type, include_u5_tpr_data, scenarios) {
 
@@ -32,38 +32,35 @@ reprioritize <- function(state_name, shapefile_path, tpr_data_path, itn_dir,
   # check for urban percentage data and prompt user to download it if they haven't already
   urban_data <- get_urban_percentage(urban_data_path)
 
+  # add "Urban" variable to the urban percentage data if it does not yet exist
+  urban_data <- add_urban_var(urban_data)
+
   # merge the extracted data with the urban percentage data, then clean up the column names
   message("Merging extracted data with urban percentage data...")
   extracted_data <- base::merge(extracted_data, urban_data, by = "WardCode", all.x = TRUE)
-  extracted_data <- clean_extracted_data(extracted_data)
-
-  # add LGA name to wards that have duplicate names
-  #extracted_data <- clean_extracted(state_name, extracted_data)
-  #state_shapefile <- clean_shapefile(state_name, state_shapefile)
+  extracted_data <- clean_merge(extracted_data)
 
   # merge the extracted data with the TPR data
   if(include_u5_tpr_data == "Yes" || include_u5_tpr_data == "yes") {
     message("Merging TPR data with extracted data...")
     # delete any duplicate columns
     extracted_data <- extracted_data[!duplicated(extracted_data), ]
-
-    extracted_data_plus <- tpr_merge(
-      tpr_data_path = tpr_data_path,
-      extracted_data = extracted_data,
-      state_name = state_name
-    )
-    extracted_data_plus <- clean_extracted_data(extracted_data_plus)
+    # apply spatial mean function to handle missing values in tpr data
+    tpr_data <- get_spatial_means(tpr_data_path, state_shapefile, tpr_data_col_name)
+    # merge
+    extracted_data_plus <- tpr_merge(tpr_data, extracted_data, state_name)
+    extracted_data_plus <- clean_merge(extracted_data_plus)
   }
 
   # remove any observations that merged incorrectly
-  extracted_data_plus <- clean_extracted_plus(state_name, extracted_data_plus)
+  extracted_data_plus <- clean_extracted_plus(extracted_data_plus)
 
   # check for settlement blocks data and prompt user to download it if they haven't already. If the user supplied them, merge them with the extracted data.
   if(include_settlement_type == "Yes" || include_settlement_type == "yes") {
     message("Getting settlement blocks data...")
     settlement_block_shp <- get_settlement_blocks(settlement_block_path)
     extracted_data_plus <- settlement_type_merge(settlement_block_shp, extracted_data_plus, state_name)
-    extracted_data_plus <- clean_extracted_data(extracted_data_plus)
+    extracted_data_plus <- clean_merge(extracted_data_plus)
   }
 
   # remove any columns that are exactly duplicated

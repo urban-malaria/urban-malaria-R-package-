@@ -137,12 +137,52 @@ prioritize_wards <- function(data, population_col, rank_col, class_col, ward_col
 #'
 #' @import dplyr
 #' @export
-tpr_merge <- function(tpr_data_path, extracted_data, state_name) {
-  tpr_data <- read.csv(tpr_data_path)
+tpr_merge <- function(tpr_data, extracted_data, state_name) {
+
   extracted_data <- extracted_data %>% mutate(WardCode = as.character(WardCode))
   tpr_data <- tpr_data %>% mutate(WardCode = as.character(WardCode))
   extracted_data_plus <- extracted_data %>%
     left_join(tpr_data %>% dplyr::select(WardCode, WardName, LGA, u5_tpr_rdt), by = "WardCode")
+}
+
+get_spatial_means <- function(tpr_data_path, state_shapefile, tpr_data_col_name = NULL) {
+
+  data <- read.csv(tpr_data_path)
+
+  if (is.null(tpr_data_col_name)) {
+    cols_to_process <- names(data)[sapply(data, function(x) any(is.na(x)))]
+  } else {
+    cols_to_process <- tpr_data_col_name
+  }
+
+  # create neighbor structure using shapefile data
+  w <- spdep::poly2nb(state_shapefile, queen = TRUE)
+
+  for (current_col in cols_to_process) {
+    col_data <- data[[current_col]]
+    missing_indices <- which(is.na(col_data))
+
+    print(paste("Processing column:", current_col))
+    print(paste("Number of NAs:", length(missing_indices)))
+
+    for (index in missing_indices) {
+      neighbor_indices <- w[[index]]
+      neighbor_values <- col_data[neighbor_indices]
+      imputed_value <- mean(neighbor_values, na.rm = TRUE)
+
+      if (is.na(imputed_value)) {
+        imputed_value <- mean(col_data, na.rm = TRUE)
+      }
+
+      col_data[index] <- imputed_value
+      print(paste("Imputed value for index", index, ":", imputed_value))
+    }
+
+    # only update the NAs in the original data
+    data[[current_col]][missing_indices] <- col_data[missing_indices]
+  }
+
+  return(data)
 }
 
 settlement_type_merge <- function(settlement_block_shp, extracted_data, state_name) {
